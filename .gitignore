@@ -81,3 +81,7 @@ staticfiles/
 
 # MCP config (contiene tokens sensibles)
 # NO ignorar claude_desktop_config.json porque no está en el repo del proyecto
+
+# Backup files
+CLAUDE.md.old
+*.old
