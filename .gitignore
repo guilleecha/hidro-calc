@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Jupyter
+.ipynb_checkpoints
+
+# Environment variables
+.env
+.env.local
+.env.django
+.env.mcp
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/*.csv
+data/*.xlsx
+*.db
+*.sqlite
+hidrocal.db
+hidrocal_django.db
+
+# Django
+*.pyc
+db.sqlite3
+/media
+/static_root
+staticfiles/
+
+# Django migrations (opcional - comentar si quieres versionar migrations)
+# */migrations/*.py
+# !*/migrations/__init__.py
+
+# Old files (ya están en el repo como backup)
+# old/
+
+# MCP config (contiene tokens sensibles)
+# NO ignorar claude_desktop_config.json porque no está en el repo del proyecto

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HidroCalc - Método Racional</title>
+    <link rel="stylesheet" href="/static/css/style_simple.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌊 HidroCalc</h1>
+            <h2>Método Racional - Cálculo de Caudales</h2>
+        </header>
+
+        <main>
+            <!-- Card de entrada -->
+            <div class="card">
+                <h3>Datos de Entrada</h3>
+                <form id="rational-form">
+                    <div class="form-group">
+                        <label for="C">Coeficiente de Escorrentía (C)</label>
+                        <input
+                            type="number"
+                            id="C"
+                            name="C"
+                            step="0.01"
+                            min="0"
+                            max="1"
+                            placeholder="Ej: 0.65"
+                            required>
+                        <span class="unit">Adimensional (0-1)</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="I">Intensidad de Lluvia (I)</label>
+                        <input
+                            type="number"
+                            id="I"
+                            name="I"
+                            step="0.1"
+                            min="0.1"
+                            placeholder="Ej: 80"
+                            required>
+                        <span class="unit">mm/h</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="A">Área de la Cuenca (A)</label>
+                        <input
+                            type="number"
+                            id="A"
+                            name="A"
+                            step="0.1"
+                            min="0.1"
+                            placeholder="Ej: 5"
+                            required>
+                        <span class="unit">hectáreas</span>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Calcular Caudal
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card de resultados (inicialmente oculto) -->
+            <div id="results" class="card results-card" style="display: none;">
+                <h3>Resultados</h3>
+                <div class="result-main">
+                    <span class="result-label">Caudal de Diseño:</span>
+                    <span id="Q-ls" class="result-value">--</span>
+                    <span class="result-unit">L/s</span>
+                </div>
+                <div class="result-secondary">
+                    <span id="Q-m3s" class="result-value-small">--</span>
+                    <span class="result-unit-small">m³/s</span>
+                </div>
+                <div class="result-summary">
+                    <p><strong>Datos utilizados:</strong></p>
+                    <ul>
+                        <li>C = <span id="result-C">--</span></li>
+                        <li>I = <span id="result-I">--</span> mm/h</li>
+                        <li>A = <span id="result-A">--</span> ha</li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p><strong>Fórmula:</strong> Q = C × I × A × 2.778</p>
+            <p><small>Referencia: Ven Te Chow, "Applied Hydrology" (1988)</small></p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app_simple.js"></script>
+</body>
+</html>

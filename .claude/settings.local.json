@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(nul)",
+      "Bash(mkdir:*)",
+      "Bash(src/__init__.py)",
+      "Bash(src/core/__init__.py)",
+      "Bash(src/models/__init__.py)",
+      "Bash(src/api/__init__.py)",
+      "Bash(src/utils/__init__.py)",
+      "Bash(tests/__init__.py)",
+      "Bash(python -m pip install:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(python:*)",
+      "Bash(taskkill:*)",
+      "Bash(find:*)",
+      "Bash(del /s /q src*.pyc 2)",
+      "Bash(while read dir)",
+      "Bash(do rm -rf \"$dir\")",
+      "Bash(done)",
+      "Bash(netstat:*)",
+      "Bash(ss:*)",
+      "Bash(source:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(copy 03_schemas.py srccoreschemas.py)",
+      "Bash(copy:*)",
+      "Bash(where:*)",
+      "Bash(npm search:*)",
+      "Bash(echo:*)",
+      "Bash(cmd /c \"echo %USERPROFILE%\")",
+      "Bash(cmd /c \"echo %APPDATA%\")",
+      "Bash(npm install:*)",
+      "Bash(tree:*)",
+      "Bash(git config:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HidroCalc - Curvas IDF Uruguay</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌧️ Curvas IDF - Uruguay</h1>
+            <p class="subtitle">Cálculo de Intensidades de Lluvia según Rodríguez Fontal (1980)</p>
+        </header>
+
+        <nav class="breadcrumb">
+            <a href="/">← Inicio</a> / Curvas IDF
+        </nav>
+
+        <main>
+            <!-- Card de Entrada -->
+            <div class="card">
+                <h3>📍 Datos de Entrada</h3>
+                <form id="idf-form">
+                    <div class="form-group">
+                        <label for="P3_10">
+                            P₃,₁₀ - Precipitación base (mm)
+                            <span class="tooltip" title="Precipitación de 3 horas y 10 años. Consultar mapa de isoyetas.">ℹ️</span>
+                        </label>
+                        <input
+                            type="number"
+                            id="P3_10"
+                            name="P3_10"
+                            step="0.1"
+                            min="50"
+                            max="100"
+                            placeholder="Ej: 75"
+                            required>
+                        <span class="unit">mm (rango típico: 60-90 mm)</span>
+                        <small class="help-text">
+                            Valores de referencia: Montevideo ~75 mm, La Paloma ~74 mm, Minas ~79 mm
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Tr">Período de Retorno (años)</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="2"> 2
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="5"> 5
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="10" checked> 10
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="25"> 25
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="50"> 50
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="100"> 100
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="Tr" value="custom"> Otro
+                            </label>
+                        </div>
+                        <input
+                            type="number"
+                            id="Tr-custom"
+                            name="Tr-custom"
+                            step="1"
+                            min="2"
+                            placeholder="Período personalizado"
+                            style="display: none; margin-top: 10px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="d">Duración de la Tormenta (horas)</label>
+                        <select id="d" name="d" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="0.25">15 minutos (0.25 h)</option>
+                            <option value="0.5">30 minutos (0.5 h)</option>
+                            <option value="1" selected>1 hora</option>
+                            <option value="2">2 horas</option>
+                            <option value="3">3 horas</option>
+                            <option value="6">6 horas</option>
+                            <option value="12">12 horas</option>
+                            <option value="24">24 horas</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Ac">
+                            Área de la Cuenca (km²)
+                            <span class="optional">(opcional)</span>
+                        </label>
+                        <input
+                            type="number"
+                            id="Ac"
+                            name="Ac"
+                            step="0.1"
+                            min="0"
+                            placeholder="Ej: 30">
+                        <span class="unit">km²</span>
+                        <small class="help-text">Dejar vacío para calcular intensidad puntual (sin corrección por área)</small>
+                    </div>
+
+                    <button type="submit" class="btn-primary">
+                        Calcular Intensidad
+                    </button>
+                </form>
+            </div>
+
+            <!-- Card de Resultados -->
+            <div id="results" class="card results-card" style="display: none;">
+                <h3>📊 Resultados</h3>
+
+                <div class="result-main">
+                    <span class="result-label">Intensidad de Lluvia:</span>
+                    <span id="I-mmh" class="result-value">--</span>
+                    <span class="result-unit">mm/h</span>
+                </div>
+
+                <div class="result-secondary">
+                    <span class="result-label">Precipitación Total:</span>
+                    <span id="P-mm" class="result-value-small">--</span>
+                    <span class="result-unit-small">mm</span>
+                </div>
+
+                <div class="result-factors">
+                    <h4>Factores de Corrección:</h4>
+                    <table class="factors-table">
+                        <tr>
+                            <td><strong>CT</strong> (Período de retorno):</td>
+                            <td id="CT">--</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CD</strong> (Duración):</td>
+                            <td id="CD">--</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CA</strong> (Área de cuenca):</td>
+                            <td id="CA">--</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div class="result-summary">
+                    <p><strong>Datos utilizados:</strong></p>
+                    <ul>
+                        <li>P₃,₁₀ = <span id="result-P3_10">--</span> mm</li>
+                        <li>Tr = <span id="result-Tr">--</span> años</li>
+                        <li>d = <span id="result-d">--</span> horas</li>
+                        <li>Ac = <span id="result-Ac">--</span></li>
+                    </ul>
+                </div>
+
+                <div class="formula-box">
+                    <strong>Fórmula:</strong> I = P₃,₁₀ × CT × CD × CA / d
+                </div>
+            </div>
+
+            <!-- Card de Referencia -->
+            <div class="card info-card">
+                <h3>💡 Información de Referencia</h3>
+                <p><strong>Fuente:</strong> Rodríguez Fontal (1980) - Curvas IDF de Uruguay</p>
+                <p><strong>Período de datos:</strong> 1906-1980</p>
+                <p><strong>Valores típicos de P₃,₁₀ en Uruguay:</strong></p>
+                <ul>
+                    <li>Montevideo: ~75 mm</li>
+                    <li>La Paloma: ~74 mm</li>
+                    <li>Minas: ~79 mm</li>
+                    <li>Punta del Este: ~73 mm</li>
+                    <li>Salto: ~68 mm</li>
+                    <li>Paysandú: ~70 mm</li>
+                    <li>Rango general: 60-90 mm</li>
+                </ul>
+                <p style="margin-top: 15px;"><strong>Períodos de retorno recomendados:</strong></p>
+                <ul>
+                    <li><strong>Tr = 2-5 años:</strong> Drenaje pluvial urbano básico</li>
+                    <li><strong>Tr = 10 años:</strong> Calles y avenidas</li>
+                    <li><strong>Tr = 25 años:</strong> Obras importantes, autopistas</li>
+                    <li><strong>Tr = 50-100 años:</strong> Obras críticas, infraestructura mayor</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p><small>Referencia: Rodríguez Fontal (1980), Genta et al. (1998)</small></p>
+        </footer>
+    </div>
+
+    <script src="/static/js/idf.js"></script>
+</body>
+</html>

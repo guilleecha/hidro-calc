@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⚡ Método Racional - Calculadora Rápida</h1>
+    <p class="page-description">
+        Cálculo instantáneo de caudales de diseño para cuencas pequeñas (< 200 ha)
+    </p>
+    <p class="page-description">
+        <small>
+            💡 <strong>¿Necesitas guardar tus cálculos?</strong>
+            Usa <a href="/studio">HidroStudio Professional</a> para gestionar proyectos completos.
+        </small>
+    </p>
+</div>
+
+<div class="content-layout">
+    <!-- Formulario de Entrada -->
+    <div class="form-section">
+        <div class="card">
+            <h2>📊 Datos de Entrada</h2>
+
+            <form id="rationalForm">
+                <!-- Coeficiente de Escorrentía C -->
+                <div class="form-group">
+                    <label for="C" class="form-label">
+                        Coeficiente de Escorrentía (C)
+                        <span class="tooltip" title="Fracción de lluvia que se convierte en escorrentía (0-1)">ℹ️</span>
+                    </label>
+                    <input
+                        type="number"
+                        id="C"
+                        name="C"
+                        class="form-input"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value="0.65"
+                        required
+                    >
+                    <small class="form-help">Valor entre 0 y 1. Ejemplo: techos ≈ 0.85, césped ≈ 0.15</small>
+                    <div class="form-error" id="error-C"></div>
+                </div>
+
+                <!-- Ver coeficientes de referencia -->
+                <div class="form-group">
+                    <button type="button" id="showCoefficients" class="btn btn-link">
+                        📋 Ver tabla de coeficientes típicos
+                    </button>
+                </div>
+
+                <!-- Intensidad de Lluvia -->
+                <div class="form-group">
+                    <label for="I_mmh" class="form-label">
+                        Intensidad de Lluvia (I)
+                        <span class="tooltip" title="Obtenida de curvas IDF para tc y Tr deseados">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="I_mmh"
+                            name="I_mmh"
+                            class="form-input"
+                            min="0"
+                            max="1000"
+                            step="0.1"
+                            value="80"
+                            required
+                        >
+                        <span class="input-unit">mm/h</span>
+                    </div>
+                    <small class="form-help">
+                        Usa la <a href="/calculators/idf">Calculadora de Curvas IDF</a> para obtener este valor
+                    </small>
+                    <div class="form-error" id="error-I_mmh"></div>
+                </div>
+
+                <!-- Área de la Cuenca -->
+                <div class="form-group">
+                    <label for="A_ha" class="form-label">
+                        Área de la Cuenca (A)
+                        <span class="tooltip" title="Área de drenaje de la cuenca">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="A_ha"
+                            name="A_ha"
+                            class="form-input"
+                            min="0"
+                            step="0.01"
+                            value="5"
+                            required
+                        >
+                        <span class="input-unit">ha</span>
+                    </div>
+                    <small class="form-help">Método confiable para cuencas < 200 ha</small>
+                    <div class="form-error" id="error-A_ha"></div>
+                </div>
+
+                <!-- Descripción (opcional) -->
+                <div class="form-group">
+                    <label for="description" class="form-label">
+                        Descripción (opcional)
+                    </label>
+                    <input
+                        type="text"
+                        id="description"
+                        name="description"
+                        class="form-input"
+                        placeholder="Ej: Cuenca residencial sector norte"
+                        maxlength="200"
+                    >
+                </div>
+
+                <!-- Botones -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="calculateBtn">
+                        Calcular Caudal
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        Limpiar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla de Coeficientes (inicialmente oculta) -->
+        <div class="card" id="coefficientsTable" style="display: none;">
+            <h3>Coeficientes de Escorrentía Típicos</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tipo de Superficie</th>
+                        <th>C Mínimo</th>
+                        <th>C Típico</th>
+                        <th>C Máximo</th>
+                    </tr>
+                </thead>
+                <tbody id="coefficientsBody">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="results-section">
+        <div class="card">
+            <h2>Resultados</h2>
+
+            <div id="resultsContainer" class="results-empty">
+                <p>Complete el formulario y presione "Calcular Caudal" para ver los resultados.</p>
+            </div>
+
+            <div id="resultsContent" style="display: none;">
+                <!-- Caudal Principal -->
+                <div class="result-main">
+                    <div class="result-label">Caudal de Diseño</div>
+                    <div class="result-value" id="result-Q-ls">-</div>
+                    <div class="result-unit">L/s</div>
+                </div>
+
+                <!-- Otros Formatos de Caudal -->
+                <div class="result-row">
+                    <div class="result-item">
+                        <span class="result-label">Caudal (m³/s):</span>
+                        <span class="result-value" id="result-Q-m3s">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Caudal (m³/h):</span>
+                        <span class="result-value" id="result-Q-m3h">-</span>
+                    </div>
+                </div>
+
+                <!-- Datos de Entrada -->
+                <div class="result-section">
+                    <h3>Datos de Entrada</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <span class="result-label">Coeficiente C:</span>
+                            <span id="result-input-C">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Intensidad I:</span>
+                            <span id="result-input-I">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Área (ha):</span>
+                            <span id="result-input-A-ha">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Área (m²):</span>
+                            <span id="result-input-A-m2">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advertencias -->
+                <div id="warningsContainer" class="warnings" style="display: none;">
+                    <h3>⚠️ Advertencias</h3>
+                    <ul id="warningsList"></ul>
+                </div>
+
+                <!-- Descripción -->
+                <div id="descriptionContainer" style="display: none;">
+                    <h3>Descripción</h3>
+                    <p id="result-description"></p>
+                </div>
+
+                <!-- Fórmula -->
+                <div class="formula-box">
+                    <h3>Fórmula Utilizada</h3>
+                    <div class="formula">
+                        Q = C × I × A × 2.778
+                    </div>
+                    <p class="formula-note">
+                        Donde: Q (L/s), C (adimensional), I (mm/h), A (ha)
+                    </p>
+                </div>
+
+                <!-- Acciones de Exportación -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="exportPdfBtn" disabled>
+                        📄 Exportar PDF
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="exportExcelBtn" disabled>
+                        📊 Exportar Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="card info-card">
+            <h3>ℹ️ Acerca del Método Racional</h3>
+            <p>
+                El Método Racional es ampliamente usado para estimar el caudal pico
+                de escorrentía en cuencas pequeñas (generalmente < 200 ha).
+            </p>
+            <p><strong>Supuestos principales:</strong></p>
+            <ul>
+                <li>La lluvia es uniforme en toda la cuenca</li>
+                <li>La duración de la lluvia ≥ tiempo de concentración</li>
+                <li>El pico de escorrentía ocurre cuando toda la cuenca contribuye</li>
+            </ul>
+            <p><strong>Referencias:</strong></p>
+            <ul>
+                <li>Ven Te Chow - "Applied Hydrology" (1988)</li>
+                <li>ASCE Manual of Practice No. 77</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/rational.js"></script>
+{% endblock %}

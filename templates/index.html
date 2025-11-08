@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <h1 class="hero-title">HidroCalc</h1>
+    <p class="hero-subtitle">Herramientas profesionales para cálculos de hidrología e hidráulica</p>
+</div>
+
+<div class="modules-grid">
+    <!-- Método Racional -->
+    <div class="module-card available">
+        <div class="module-icon">💧</div>
+        <h2>Método Racional</h2>
+        <p>Cálculo de caudales de diseño para cuencas pequeñas</p>
+        <p class="module-formula">Q = C × I × A × 2.778</p>
+        <a href="/rational" class="btn btn-primary">Calcular</a>
+        <span class="badge badge-available">Disponible</span>
+    </div>
+
+    <!-- Curvas IDF Uruguay -->
+    <div class="module-card available">
+        <div class="module-icon">🌧️</div>
+        <h2>Curvas IDF - Uruguay</h2>
+        <p>Cálculo de intensidades de lluvia según Rodríguez Fontal (1980)</p>
+        <p class="module-formula">I = P₃,₁₀ × CT × CD × CA / d</p>
+        <a href="/idf" class="btn btn-primary">Calcular</a>
+        <span class="badge badge-available">Disponible</span>
+    </div>
+
+    <!-- Hidrogramas -->
+    <div class="module-card upcoming">
+        <div class="module-icon">📊</div>
+        <h2>Hidrogramas</h2>
+        <p>Método del hidrograma unitario SCS</p>
+        <p class="module-formula">Número de Curva (CN)</p>
+        <button class="btn btn-secondary" disabled>Próximamente</button>
+        <span class="badge badge-upcoming">Próximamente</span>
+    </div>
+
+    <!-- Flujo Gradualmente Variado -->
+    <div class="module-card upcoming">
+        <div class="module-icon">🌊</div>
+        <h2>Flujo Gradualmente Variado</h2>
+        <p>Perfiles de flujo en canales (GVF)</p>
+        <p class="module-formula">Standard Step Method</p>
+        <button class="btn btn-secondary" disabled>Próximamente</button>
+        <span class="badge badge-upcoming">Próximamente</span>
+    </div>
+
+    <!-- Diseño de Canales -->
+    <div class="module-card upcoming">
+        <div class="module-icon">🏗️</div>
+        <h2>Diseño de Canales</h2>
+        <p>Cálculos de flujo uniforme y secciones óptimas</p>
+        <p class="module-formula">Ecuación de Manning</p>
+        <button class="btn btn-secondary" disabled>Próximamente</button>
+        <span class="badge badge-upcoming">Próximamente</span>
+    </div>
+
+    <!-- Obras Hidráulicas -->
+    <div class="module-card upcoming">
+        <div class="module-icon">🔧</div>
+        <h2>Obras Hidráulicas</h2>
+        <p>Alcantarillas, vertederos, orificios</p>
+        <p class="module-formula">Control de entrada/salida</p>
+        <button class="btn btn-secondary" disabled>Próximamente</button>
+        <span class="badge badge-upcoming">Próximamente</span>
+    </div>
+</div>
+
+<div class="info-section">
+    <h2>Acerca de HidroCalc</h2>
+    <p>
+        HidroCalc es una herramienta web desarrollada para ingenieros civiles especializados
+        en el diseño de sistemas de drenaje pluvial. Proporciona cálculos precisos y rápidos
+        con una interfaz intuitiva y profesional.
+    </p>
+
+    <h3>Características</h3>
+    <ul>
+        <li>✅ Cálculos precisos basados en bibliografía técnica reconocida</li>
+        <li>✅ Validaciones automáticas de entrada de datos</li>
+        <li>✅ Interfaz web responsive y fácil de usar</li>
+        <li>✅ Documentación técnica completa</li>
+        <li>✅ API REST para integraciones</li>
+    </ul>
+
+    <h3>Referencias</h3>
+    <ul>
+        <li>Ven Te Chow - "Applied Hydrology" (1988)</li>
+        <li>Ven Te Chow - "Open Channel Hydraulics" (1959)</li>
+        <li>Rodríguez Fontal - "Curvas IDF de Uruguay" (1980)</li>
+        <li>Genta et al. - "Actualización de curvas IDF" (1998)</li>
+        <li>USDA - "Urban Hydrology for Small Watersheds" (TR-55)</li>
+        <li>HEC-HMS Reference Manual</li>
+    </ul>
+</div>
+{% endblock %}
