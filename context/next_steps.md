@@ -28,6 +28,8 @@ Tareas pendientes organizadas por prioridad.
 **Estimado:** 3-4 horas
 **Requiere:** Conocimiento de Django templates
 
+**IMPORTANTE:** Esta es la tarea más prioritaria a continuación.
+
 **Tareas:**
 - [ ] Convertir templates Jinja2 a Django templates
 - [ ] Migrar vistas de calculadoras (function-based o class-based)
@@ -51,27 +53,9 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 3. **Implementar Swagger/ReDoc para API**
-**Estimado:** 1 hora
-**Requiere:** drf-spectacular
-
-**Tareas:**
-- [ ] Instalar `drf-spectacular`
-- [ ] Configurar en settings.py
-- [ ] Agregar URLs de documentación
-- [ ] Personalizar esquema con descripciones
-- [ ] Generar documentación automática
-
-**Beneficio:**
-- Documentación automática de API
-- Testing más fácil de endpoints
-- Referencia para frontend
-
----
-
 ## 🟡 MEDIA PRIORIDAD (Hacer Pronto)
 
-### 4. **Implementar HidroStudio Professional - Dashboard**
+### 3. **Implementar HidroStudio Professional - Dashboard**
 **Estimado:** 4-5 horas
 **Requiere:** Django views, templates
 
@@ -90,7 +74,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 5. **Configurar Testing Automatizado**
+### 4. **Configurar Testing Automatizado**
 **Estimado:** 3-4 horas
 **Requiere:** pytest-django, Playwright
 
@@ -110,7 +94,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 6. **Implementar Autenticación Completa**
+### 5. **Implementar Autenticación Completa**
 **Estimado:** 3 horas
 **Requiere:** Django Allauth, JWT
 
@@ -131,7 +115,7 @@ Tareas pendientes organizadas por prioridad.
 
 ## 🟢 BAJA PRIORIDAD (Backlog)
 
-### 7. **Migrar a PostgreSQL**
+### 6. **Migrar a PostgreSQL**
 **Estimado:** 2 horas
 **Requiere:** PostgreSQL instalado
 
@@ -149,7 +133,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 8. **Implementar Exportación de Reportes**
+### 7. **Implementar Exportación de Reportes**
 **Estimado:** 4 horas
 **Requiere:** ReportLab, OpenPyXL
 
@@ -166,7 +150,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 9. **Implementar Análisis Hidrológico Completo**
+### 8. **Implementar Análisis Hidrológico Completo**
 **Estimado:** 6-8 horas
 **Requiere:** Lógica hidrológica, NumPy, SciPy
 
@@ -184,7 +168,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 10. **Deployment en Producción**
+### 9. **Deployment en Producción**
 **Estimado:** 4-6 horas
 **Requiere:** Servidor (Railway, Render, AWS)
 
@@ -199,7 +183,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 11. **Machine Learning Features**
+### 10. **Machine Learning Features**
 **Estimado:** 8-10 horas
 **Requiere:** Scikit-learn, Celery
 
@@ -211,7 +195,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 12. **Colaboración Multi-Usuario**
+### 11. **Colaboración Multi-Usuario**
 **Estimado:** 5-6 horas
 **Requiere:** Permisos, WebSockets (opcional)
 
@@ -226,9 +210,9 @@ Tareas pendientes organizadas por prioridad.
 ## 🎯 Ruta Recomendada (Orden Sugerido)
 
 ```
-1. MCP API Keys (15 min)            ← Rápido, útil inmediatamente
-2. Swagger/ReDoc (1h)               ← Documentación de API
-3. Migrar Calculadoras (3-4h)       ← Funcionalidad básica
+1. ✅ Swagger/ReDoc (1h)               ← COMPLETADO
+2. MCP API Keys (15 min)            ← Rápido, útil inmediatamente
+3. Migrar Calculadoras (3-4h)       ← PRÓXIMA TAREA - Funcionalidad básica
 4. Testing Setup (3-4h)             ← Base sólida
 5. Autenticación (3h)               ← Requerido para Studio
 6. HidroStudio Dashboard (4-5h)     ← Producto principal
@@ -238,21 +222,23 @@ Tareas pendientes organizadas por prioridad.
 10. Deployment (4-6h)               ← Lanzamiento
 ```
 
-**Total estimado:** ~35-45 horas de desarrollo
+**Total estimado:** ~34-44 horas de desarrollo (1h completada)
 
 ---
 
 ## 📊 Métricas de Progreso
 
-**Completado:** 40%
+**Completado:** 45%
 - ✅ Base de datos
 - ✅ API REST
 - ✅ Admin panel
 - ✅ MCP instalado
 - ✅ Proyecto organizado
+- ✅ GitHub repository
+- ✅ API Documentation (Swagger/ReDoc)
 
-**En Progreso:** 10%
-- 🔄 Configuración de MCP (API keys)
+**En Progreso:** 5%
+- 🔄 Configuración de MCP (API keys - Context7)
 
 **Pendiente:** 50%
 - ⏳ Calculadoras

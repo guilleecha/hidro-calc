@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',  # API documentation
     'corsheaders',
     'django_filters',
     'import_export',
@@ -146,6 +147,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # ===== JWT SETTINGS =====
@@ -159,6 +161,45 @@ SIMPLE_JWT = {
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# ===== DRF-SPECTACULAR SETTINGS =====
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'HidroCalc API',
+    'DESCRIPTION': 'API REST para cálculos hidrológicos e hidráulicos profesionales. '
+                   'Proporciona endpoints para gestión de proyectos, cuencas, tormentas de diseño e hidrogramas.',
+    'VERSION': '3.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'CONTACT': {
+        'name': 'Guillermo Echavarria',
+        'email': 'guilleechavarria@gmail.com',
+        'url': 'https://github.com/guilleecha/hidro-calc',
+    },
+    'LICENSE': {
+        'name': 'MIT License',
+        'url': 'https://opensource.org/licenses/MIT',
+    },
+    'EXTERNAL_DOCS': {
+        'description': 'Documentación completa en GitHub',
+        'url': 'https://github.com/guilleecha/hidro-calc',
+    },
+    'TAGS': [
+        {'name': 'Projects', 'description': 'Gestión de proyectos hidrológicos'},
+        {'name': 'Watersheds', 'description': 'Gestión de cuencas hidrográficas'},
+        {'name': 'Design Storms', 'description': 'Tormentas de diseño (curvas IDF)'},
+        {'name': 'Hydrographs', 'description': 'Hidrogramas calculados'},
+        {'name': 'Rainfall Data', 'description': 'Datos de precipitación'},
+        {'name': 'Auth', 'description': 'Autenticación y autorización'},
+    ],
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+        'filter': True,
+    },
+    'SWAGGER_UI_DIST': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest',
+    'SWAGGER_UI_FAVICON_HREF': 'https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/favicon-32x32.png',
 }
 
 # ===== CORS SETTINGS =====
