@@ -125,13 +125,15 @@ Acceder a:
 
 ## 📖 Documentación
 
-- **[CLAUDE.md](CLAUDE.md)** - Guía de arquitectura completa
+- **[CLAUDE.md](CLAUDE.md)** - Guía de arquitectura del proyecto
+- **[docs/](docs/)** - Documentación detallada
+  - Coding standards, testing guide, error handling, git workflow
+  - `MCP_SETUP.md` - Configuración de MCP servers
 - **[context/](context/)** - Sistema de contexto del proyecto
   - `current_session.md` - Estado actual
   - `architecture_overview.md` - Overview técnico
   - `next_steps.md` - Roadmap
 - **[work_log/](work_log/)** - Documentación de sesiones de desarrollo
-- **[MCP_SETUP.md](MCP_SETUP.md)** - Configuración de MCP servers
 
 ---
 

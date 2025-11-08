@@ -50,15 +50,18 @@ hidro-calc/
 │   │   └── architecture_overview.md (este archivo)
 │   ├── work_log/             Documentación de sesiones
 │   │   ├── 00_INDICE_TRABAJO.md
-│   │   ├── 01_IMPLEMENTACION_BASE_DATOS.md
-│   │   ├── 02_INTEGRACION_FRONTEND.md
-│   │   ├── 03_ARQUITECTURA_DUAL_PROPUESTA.md
-│   │   └── 04_MIGRACION_DJANGO.md
-│   ├── old/                  Archivos obsoletos (FastAPI)
-│   ├── docs/                 Documentación adicional
-│   ├── CLAUDE.md            ⭐ Guía principal de arquitectura
-│   ├── MCP_SETUP.md          Configuración de MCP servers
-│   └── INSTALACION.md        Guía de instalación
+│   │   ├── 01-07_*.md       Sesiones 1-7 documentadas
+│   ├── docs/                 Documentación técnica detallada
+│   │   ├── README.md        Guía de navegación
+│   │   ├── coding-standards.md
+│   │   ├── testing-guide.md
+│   │   ├── error-handling.md
+│   │   ├── git-workflow.md
+│   │   ├── architecture-decisions.md
+│   │   └── MCP_SETUP.md     Configuración de MCP servers
+│   ├── old/                  Archivos obsoletos (FastAPI, docs viejos)
+│   ├── CLAUDE.md            ⭐ Guía principal (concisa)
+│   └── README.md            README de GitHub
 │
 ├── 🎨 DJANGO APPS
 │   ├── core/                 App principal - modelos de BD
