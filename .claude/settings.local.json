@@ -48,7 +48,9 @@
       "Bash(cmd /c \"copy core\\models.py core\\models.py.backup\")",
       "Bash(cmd /c \"dir /b tests\\*.py\")",
       "Bash(del:*)",
-      "Bash(cmd /c \"del /q tests\\test_api.py tests\\test_rational.py tests\\test_idf.py\")"
+      "Bash(cmd /c \"del /q tests\\test_api.py tests\\test_rational.py tests\\test_idf.py\")",
+      "Bash(cmd /c \"copy hydrology\\models.py hydrology\\models.py.backup\")",
+      "Bash(cmd /c \"copy watersheds\\models.py watersheds\\models.py.backup\")"
     ],
     "deny": [],
     "ask": []

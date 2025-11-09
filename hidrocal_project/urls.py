@@ -26,6 +26,9 @@ urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
 
+    # Authentication (allauth)
+    path('accounts/', include('allauth.urls')),
+
     # Calculadoras rápidas (sin login)
     path('calculators/', include('calculators.urls')),
 
