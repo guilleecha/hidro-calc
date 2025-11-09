@@ -1,0 +1,397 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HidroStudio - {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Layout Principal */
+    .studio-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 0;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* Sidebar */
+    .studio-sidebar {
+        background: #f9fafb;
+        border-right: 1px solid #e5e7eb;
+        padding: 1.5rem 1rem;
+        overflow-y: auto;
+    }
+
+    .sidebar-section {
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-section h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+    }
+
+    .tree-view, .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tree-view li {
+        margin-bottom: 0.25rem;
+    }
+
+    .tree-item {
+        display: block;
+        padding: 0.5rem;
+        border-radius: 0.375rem;
+        color: #374151;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .tree-item:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+
+    .tree-item.active {
+        background: #2563eb;
+        color: white;
+    }
+
+    .sub-tree {
+        list-style: none;
+        padding-left: 1.25rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Main Content */
+    .studio-main {
+        padding: 2rem;
+        background: white;
+    }
+
+    .studio-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .studio-header h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .studio-header .breadcrumb {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+        text-align: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    /* Info Card */
+    .info-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-card h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+        color: #111827;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 500;
+        color: #6b7280;
+    }
+
+    .info-value {
+        color: #111827;
+        font-weight: 600;
+    }
+
+    /* Chart Placeholder */
+    .chart-container {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .chart-placeholder {
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6b7280;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="studio-layout">
+    <!-- Sidebar -->
+    <aside class="studio-sidebar">
+        <div class="sidebar-section">
+            <h3>📁 Proyectos</h3>
+            <ul class="tree-view">
+                {% for proj in all_projects %}
+                <li>
+                    <a href="{% url 'studio:dashboard_project' proj.id %}"
+                       class="tree-item {% if proj.id == project.id %}active{% endif %}">
+                        {{ proj.name }}
+                    </a>
+                    {% if proj.id == project.id and watersheds %}
+                    <ul class="sub-tree">
+                        {% for ws in watersheds %}
+                        <li>
+                            <a href="?watershed={{ ws.id }}"
+                               class="tree-item {% if ws.id == selected_watershed.id %}active{% endif %}">
+                                💧 {{ ws.name }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li class="tree-item">No hay proyectos</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if selected_watershed %}
+        <div class="sidebar-section">
+            <h3>📊 Análisis</h3>
+            <ul class="menu-list">
+                <li>
+                    <a href="#" class="tree-item">
+                        🌧️ Tormentas ({{ design_storms.count }})
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="tree-item">
+                        📈 Hidrogramas ({{ hydrographs.count }})
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'studio:hydrograph_compare' project.id %}" class="tree-item">
+                        📊 Comparar Métodos
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </aside>
+
+    <!-- Main Content -->
+    <main class="studio-main">
+        {% if not project %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📂</div>
+            <h2>No hay proyectos disponibles</h2>
+            <p>Crea un proyecto desde el <a href="/admin/">Django Admin</a> para comenzar.</p>
+        </div>
+        {% elif not selected_watershed %}
+        <div class="empty-state">
+            <div class="empty-state-icon">💧</div>
+            <h2>No hay cuencas en este proyecto</h2>
+            <p>Agrega cuencas desde el <a href="/admin/">Django Admin</a>.</p>
+        </div>
+        {% else %}
+        <!-- Header -->
+        <div class="studio-header">
+            <h1>{{ project.name }}</h1>
+            <div class="breadcrumb">
+                {{ project.name }} / {{ selected_watershed.name }}
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        {% if stats %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💧</div>
+                <div class="stat-value">{{ stats.peak_discharge_max|floatformat:2 }}</div>
+                <div class="stat-label">Caudal Máx (m³/s)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">{{ stats.total_hydrographs }}</div>
+                <div class="stat-label">Hidrogramas Calculados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌧️</div>
+                <div class="stat-value">{{ design_storms.count }}</div>
+                <div class="stat-label">Tormentas de Diseño</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Watershed Info -->
+        <div class="info-card">
+            <h2>💧 Información de la Cuenca</h2>
+            <div class="info-row">
+                <span class="info-label">Área:</span>
+                <span class="info-value">{{ selected_watershed.area_hectareas }} ha ({{ selected_watershed.area_m2|floatformat:0 }} m²)</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Tiempo de Concentración:</span>
+                <span class="info-value">{{ selected_watershed.tc_horas }} h ({{ selected_watershed.tc_minutes|floatformat:0 }} min)</span>
+            </div>
+            {% if selected_watershed.nc_scs %}
+            <div class="info-row">
+                <span class="info-label">Número de Curva (NC):</span>
+                <span class="info-value">{{ selected_watershed.nc_scs }}</span>
+            </div>
+            {% endif %}
+            {% if selected_watershed.c_racional %}
+            <div class="info-row">
+                <span class="info-label">Coeficiente Racional (C):</span>
+                <span class="info-value">{{ selected_watershed.c_racional }}</span>
+            </div>
+            {% endif %}
+            {% if selected_watershed.elevation_m %}
+            <div class="info-row">
+                <span class="info-label">Elevación:</span>
+                <span class="info-value">{{ selected_watershed.elevation_m }} msnm</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Storm Info -->
+        {% if latest_storm %}
+        <div class="info-card">
+            <h2>🌧️ Última Tormenta de Diseño</h2>
+            <div class="info-row">
+                <span class="info-label">Nombre:</span>
+                <span class="info-value">{{ latest_storm.name }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Período de Retorno:</span>
+                <span class="info-value">{{ latest_storm.return_period_years }} años</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Duración:</span>
+                <span class="info-value">{{ latest_storm.duration_hours }} h</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Lluvia Total:</span>
+                <span class="info-value">{{ latest_storm.total_rainfall_mm }} mm</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Distribución:</span>
+                <span class="info-value">{{ latest_storm.get_distribution_type_display }}</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Charts -->
+        {% if hyetograph_data %}
+        <div class="chart-container">
+            <div id="hyetograph-chart" style="width:100%; height:400px;"></div>
+        </div>
+        {% endif %}
+
+        {% if hydrographs_data %}
+        <div class="chart-container">
+            <div id="hydrographs-chart" style="width:100%; height:400px;"></div>
+        </div>
+        {% endif %}
+
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/plotly-charts.js"></script>
+<script src="/static/js/dashboard-charts.js"></script>
+
+<!-- Data injection for charts -->
+<script>
+    {% if hyetograph_data %}
+    window.hyetographData = {{ hyetograph_data|safe }};
+    window.hyetographData.title = '📊 Hietograma - {{ latest_storm.name }}';
+    {% endif %}
+
+    {% if hydrographs_data %}
+    window.hydrographsData = {{ hydrographs_data|safe }};
+    window.hydrographsTitle = '📈 Comparación de Hidrogramas ({{ hydrographs.count }} métodos)';
+    {% endif %}
+</script>
+{% endblock %}

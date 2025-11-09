@@ -1,80 +1,98 @@
-# 📋 Próximos Pasos - HidroCalc
+# 🎯 Próximos Pasos - HidroCalc
 
-Tareas pendientes organizadas por prioridad.
-
----
-
-## 🔴 ALTA PRIORIDAD (Hacer Ahora)
-
-### 1. **Configurar API Keys para MCP Servers**
-**Estimado:** 15 min
-**Requiere:**
-- Crear cuenta GitHub Personal Access Token
-- Crear cuenta Context7 y obtener API key
-
-**Beneficio:**
-- Activar GitHub integration para gestión de código
-- Acceso a documentación actualizada de librerías
-
-**Pasos:**
-1. https://github.com/settings/tokens → Generar token
-2. https://context7.com → Crear cuenta y API key
-3. Actualizar `claude_desktop_config.json`
-4. Reiniciar Claude Desktop
+**Última actualización:** 2025-11-09
+**Estado actual:** HidroStudio Phase 1 completado
 
 ---
 
-### 2. **Migrar Calculadoras a Django Templates**
+## 🔥 ALTA PRIORIDAD (Hacer Ahora)
+
+### 1. **HidroStudio Phase 2: Visualizaciones con Plotly.js** ⭐ RECOMENDADO
 **Estimado:** 3-4 horas
-**Requiere:** Conocimiento de Django templates
+**Estado:** Pendiente (Phase 1 completado ✅)
 
-**IMPORTANTE:** Esta es la tarea más prioritaria a continuación.
+**Objetivo:** Cumplir requerimiento del usuario de ver hietogramas, hidrogramas y comparaciones en el dashboard
 
 **Tareas:**
-- [ ] Convertir templates Jinja2 a Django templates
-- [ ] Migrar vistas de calculadoras (function-based o class-based)
-- [ ] Actualizar rutas en urls.py
-- [ ] Integrar JavaScript con nueva estructura
-- [ ] Testing de cada calculadora:
-  - [ ] Método Racional
-  - [ ] Curvas IDF
-  - [ ] Tiempo de Concentración
-  - [ ] Coeficiente de Escorrentía
+- [ ] Integrar Plotly.js (CDN o static file)
+- [ ] Crear `static/js/plotly-charts.js`
+- [ ] Implementar función `renderHyetograph()` - gráfico de barras
+- [ ] Implementar función `renderHydrograph()` - gráfico de líneas
+- [ ] Implementar función `renderHydrographComparison()` - múltiples líneas
+- [ ] Actualizar views.py para generar datos de gráficos
+- [ ] Actualizar dashboard.html para integrar Plotly
+- [ ] Testing visual de gráficos
 
-**Archivos a migrar:**
-- `calculators/views.py`
-- `calculators/templates/`
-- `calculators/urls.py`
+**Archivos a modificar:**
+- `static/js/plotly-charts.js` (crear)
+- `studio/views.py` (agregar generación de datos)
+- `templates/studio/dashboard.html` (integrar JS)
+- `templates/base.html` (agregar Plotly CDN)
 
 **Beneficio:**
-- Calculadoras funcionando en Django
-- Consistencia en framework
-- Base para Arquitectura Dual
+- Dashboard funcional y demo-able
+- Cumple requerimiento principal del usuario
+- Base para Phase 3 (comparación avanzada)
+
+---
+
+### 2. **Actualizar seed_database Command**
+**Estimado:** 30 min
+**Estado:** Pendiente
+
+**Tareas:**
+- [ ] Asignar owner automáticamente (admin user)
+- [ ] Generar hidrogramas de ejemplo (mínimo 3 por tormenta)
+- [ ] Calcular stats para stats cards
+- [ ] Agregar opciones de configuración
+
+**Archivos a modificar:**
+- `core/management/commands/seed_database.py`
+
+**Beneficio:**
+- Dashboard muestra datos reales en stats cards
+- Testing más completo y realista
 
 ---
 
 ## 🟡 MEDIA PRIORIDAD (Hacer Pronto)
 
-### 3. **Implementar HidroStudio Professional - Dashboard**
-**Estimado:** 4-5 horas
-**Requiere:** Django views, templates
+### 3. **HidroStudio Phase 3: Comparación Avanzada**
+**Estimado:** 2-3 horas
+**Estado:** Pendiente (requiere Phase 2)
 
 **Tareas:**
-- [ ] Crear vista de dashboard (CBV)
-- [ ] Template de dashboard
-- [ ] Lista de proyectos del usuario
-- [ ] Estadísticas generales
-- [ ] Accesos rápidos
-- [ ] URLs configuradas
+- [ ] Vista de comparación mejorada con multi-select
+- [ ] Tabla comparativa (Q pico, T pico, volumen, diferencias %)
+- [ ] Análisis de sensibilidad (variación de C, NC, Tc)
+- [ ] Recomendaciones basadas en comparación
 
-**Archivos:**
-- `studio/views.py`
-- `studio/templates/studio/dashboard.html`
-- `studio/urls.py`
+**Archivos a crear/modificar:**
+- `templates/studio/hydrograph_compare.html` (mejorar)
+- `studio/views.py` (mejorar hydrograph_compare)
 
 ---
 
-### 4. **Configurar Testing Automatizado**
+### 4. **HidroStudio Phase 4: CRUD Completo**
+**Estimado:** 3-4 horas
+**Estado:** Pendiente
+
+**Tareas:**
+- [ ] Forms Django para Project, Watershed, DesignStorm
+- [ ] Vistas de crear/editar (CreateView, UpdateView)
+- [ ] UI para calcular hidrogramas con diferentes métodos
+- [ ] Guardar análisis
+- [ ] Validación de datos
+
+**Archivos a crear:**
+- `studio/forms.py`
+- `templates/studio/project_form.html`
+- `templates/studio/watershed_form.html`
+- `templates/studio/storm_form.html`
+
+---
+
+### 5. **Configurar Testing Automatizado**
 **Estimado:** 3-4 horas
 **Requiere:** pytest-django, Playwright
 
@@ -94,7 +112,7 @@ Tareas pendientes organizadas por prioridad.
 
 ---
 
-### 5. **Implementar Autenticación Completa**
+### 6. **Implementar Autenticación Completa**
 **Estimado:** 3 horas
 **Requiere:** Django Allauth, JWT
 
@@ -115,7 +133,19 @@ Tareas pendientes organizadas por prioridad.
 
 ## 🟢 BAJA PRIORIDAD (Backlog)
 
-### 6. **Migrar a PostgreSQL**
+### 7. **HidroStudio Phase 5: Exportación**
+**Estimado:** 2-3 horas
+**Estado:** Pendiente
+
+**Tareas:**
+- [ ] PDF con reportlab (incluir gráficos)
+- [ ] Excel con openpyxl (múltiples hojas)
+- [ ] CSV para otros software (HEC-RAS, SWMM)
+- [ ] Descarga de archivos
+
+---
+
+### 8. **Migrar a PostgreSQL**
 **Estimado:** 2 horas
 **Requiere:** PostgreSQL instalado
 
@@ -130,41 +160,6 @@ Tareas pendientes organizadas por prioridad.
 - Mejor para producción
 - Queries más eficientes
 - Soporte para funciones avanzadas
-
----
-
-### 7. **Implementar Exportación de Reportes**
-**Estimado:** 4 horas
-**Requiere:** ReportLab, OpenPyXL
-
-**Tareas:**
-- [ ] Templates de PDF con ReportLab
-- [ ] Exportación a Excel con OpenPyXL
-- [ ] Incluir gráficos (Plotly → imagen)
-- [ ] Logo y branding
-- [ ] Descarga de archivos
-
-**Beneficio:**
-- Reportes profesionales
-- Compartir resultados fácilmente
-
----
-
-### 8. **Implementar Análisis Hidrológico Completo**
-**Estimado:** 6-8 horas
-**Requiere:** Lógica hidrológica, NumPy, SciPy
-
-**Tareas:**
-- [ ] Vista de análisis de cuenca
-- [ ] Cálculo automático de Tc (múltiples métodos)
-- [ ] Generación de curvas IDF
-- [ ] Cálculo de hidrogramas (Racional, SCS)
-- [ ] Visualización con Plotly
-- [ ] Guardado automático en BD
-
-**Beneficio:**
-- Flujo completo de HidroStudio
-- Valor principal del producto
 
 ---
 
@@ -210,44 +205,55 @@ Tareas pendientes organizadas por prioridad.
 ## 🎯 Ruta Recomendada (Orden Sugerido)
 
 ```
-1. ✅ Swagger/ReDoc (1h)               ← COMPLETADO
-2. MCP API Keys (15 min)            ← Rápido, útil inmediatamente
-3. Migrar Calculadoras (3-4h)       ← PRÓXIMA TAREA - Funcionalidad básica
-4. Testing Setup (3-4h)             ← Base sólida
-5. Autenticación (3h)               ← Requerido para Studio
-6. HidroStudio Dashboard (4-5h)     ← Producto principal
-7. Análisis Hidrológico (6-8h)      ← Core value
-8. Exportación Reportes (4h)        ← Valor agregado
-9. PostgreSQL (2h)                  ← Preparar producción
-10. Deployment (4-6h)               ← Lanzamiento
+✅ Sesión 1-7: Base del Proyecto              ← COMPLETADO
+✅ Sesión 8: HidroStudio Phase 1              ← COMPLETADO
+🔥 Sesión 9: HidroStudio Phase 2 (Plotly)    ← PRÓXIMO (3-4h)
+   Sesión 10: seed_database mejorado (30min)
+   Sesión 11: HidroStudio Phase 3 (2-3h)
+   Sesión 12: HidroStudio Phase 4 (3-4h)
+   Sesión 13: HidroStudio Phase 5 (2-3h)
+   Sesión 14: Testing Setup (3-4h)
+   Sesión 15: Autenticación (3h)
+   Sesión 16: PostgreSQL + Deploy (6-8h)
 ```
 
-**Total estimado:** ~34-44 horas de desarrollo (1h completada)
+**Progreso HidroStudio:**
+- ✅ Phase 1: Dashboard básico (2h)
+- 🔥 Phase 2: Visualizaciones (3-4h) - PRÓXIMO
+- ⏳ Phase 3: Comparación (2-3h)
+- ⏳ Phase 4: CRUD (3-4h)
+- ⏳ Phase 5: Exportación (2-3h)
+
+**Total HidroStudio:** ~14-18 horas (2h completadas)
 
 ---
 
 ## 📊 Métricas de Progreso
 
-**Completado:** 45%
-- ✅ Base de datos
-- ✅ API REST
-- ✅ Admin panel
+**Completado:** 60%
+- ✅ Base de datos (Django ORM)
+- ✅ API REST (30+ endpoints)
+- ✅ Admin panel configurado
 - ✅ MCP instalado
-- ✅ Proyecto organizado
+- ✅ Proyecto organizado (multi-app)
 - ✅ GitHub repository
 - ✅ API Documentation (Swagger/ReDoc)
+- ✅ HidroStudio Phase 1 (Dashboard básico)
+- ✅ Arquitectura multi-app (projects, watersheds, hydrology)
+- ✅ CSS modular
+- ✅ Calculadoras básicas (Rational, IDF)
 
-**En Progreso:** 5%
-- 🔄 Configuración de MCP (API keys - Context7)
+**En Progreso:** 10%
+- 🔄 HidroStudio Phase 2 (Visualizaciones con Plotly.js)
 
-**Pendiente:** 50%
-- ⏳ Calculadoras
-- ⏳ HidroStudio
-- ⏳ Testing
+**Pendiente:** 30%
+- ⏳ HidroStudio Phase 3-5
+- ⏳ Testing extendido
 - ⏳ Autenticación
 - ⏳ Deployment
 
 ---
 
-**Actualizado:** 2025-11-08
-**Próxima revisión:** Al completar cada tarea de alta prioridad
+**Actualizado:** 2025-11-09
+**Próxima acción:** Phase 2 - Integrar Plotly.js y visualizaciones
+**Última sesión:** #10 - HidroStudio Phase 1 completado

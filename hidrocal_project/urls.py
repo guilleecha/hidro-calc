@@ -29,6 +29,9 @@ urlpatterns = [
     # Calculadoras rápidas (sin login)
     path('calculators/', include('calculators.urls')),
 
+    # HidroStudio Professional
+    path('studio/', include('studio.urls')),
+
     # API REST
     path('api/', include('api.urls')),
 
