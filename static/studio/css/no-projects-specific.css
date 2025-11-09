@@ -1,0 +1,145 @@
+/**
+ * HidroStudio No Projects Page - Specific Styles
+ * Page-specific styles that complement studio.css
+ */
+
+.no-projects-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: var(--spacing-3xl) var(--spacing-md);
+    text-align: center;
+}
+
+/* Empty State */
+.empty-state {
+    background: white;
+    border: 2px dashed var(--color-gray-300);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-3xl) var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+}
+
+.empty-icon {
+    font-size: var(--font-6xl);
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.7;
+}
+
+.empty-state h1 {
+    font-size: var(--font-3xl);
+    font-weight: var(--font-bold);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-state p {
+    font-size: var(--font-lg);
+    color: var(--color-gray-600);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--spacing-lg);
+}
+
+/* Instructions Section */
+.instructions {
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: left;
+    margin-bottom: var(--spacing-xl);
+}
+
+.instructions h2 {
+    font-size: var(--font-xl);
+    font-weight: var(--font-semibold);
+    color: #1e40af;
+    margin-bottom: var(--spacing-md);
+}
+
+.instructions ol {
+    margin-left: var(--spacing-lg);
+    color: var(--color-gray-700);
+}
+
+.instructions li {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.6;
+}
+
+.instructions code {
+    background: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-family: monospace;
+    color: #1e40af;
+    font-size: var(--font-sm);
+}
+
+/* Help Card */
+.help-card {
+    background: var(--color-gray-100);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+}
+
+.help-card h3 {
+    font-size: var(--font-lg);
+    font-weight: var(--font-semibold);
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-md);
+}
+
+.help-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.help-link {
+    display: block;
+    padding: var(--spacing-sm);
+    background: white;
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--color-gray-700);
+    transition: var(--transition-all);
+}
+
+.help-link:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+
+.help-link strong {
+    display: block;
+    font-weight: var(--font-semibold);
+    margin-bottom: var(--spacing-xs);
+}
+
+.help-link small {
+    color: var(--color-gray-600);
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
