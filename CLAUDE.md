@@ -1,3 +1,9 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
 # 🌊 HidroCalc - Project Instructions
 
 > Plataforma web profesional para cálculos hidrológicos e hidráulicos con Django 5.2.8
@@ -111,8 +117,16 @@ python manage.py shell                # Django shell
 ### **Testing:**
 ```bash
 python -m pytest                      # Run all tests
+python -m pytest tests/test_models.py::TestProject  # Single test
 python -m pytest --cov=core --cov=api  # With coverage
 python -m pytest -v                   # Verbose
+python -m pytest -k "test_watershed"  # Match pattern
+```
+
+### **Dependencies:**
+```bash
+pip install -r requirements_django.txt
+pip freeze > requirements_django.txt  # Update after adding packages
 ```
 
 **Ver detalles:** `docs/testing-guide.md`
@@ -134,9 +148,10 @@ grep -r "class.*Service" */services.py
 
 ### **3. SEPARATION OF CONCERNS**
 - Validation → Serializers/Forms
-- Business logic → Services
+- Business logic → Services (create in `core/services.py` if complex)
 - HTTP handling → Views
-- NO mixed concerns
+- Database → Models with custom managers if needed
+- NO mixed concerns, NO business logic in serializers
 
 ### **4. TEST EVERY FUNCTION**
 - Cada función pública = 1 test mínimo
@@ -203,7 +218,13 @@ User (Django Auth)
                       └─1:N─→ RainfallData
 ```
 
-**Primary Keys:** Django BigAutoField (integer auto-increment)
+**Key Implementation Details:**
+- Primary Keys: Django BigAutoField (integer auto-increment)
+- All models have `created_at`, `updated_at` timestamps
+- JSON fields store time series data (`hydrograph_data`, `rainfall_series`)
+- Models location: `core/models.py` (~480 lines)
+- Cascading deletes: Use `CASCADE` for dependent data, `PROTECT` for critical refs
+
 **Ver detalles:** `context/architecture_overview.md`
 
 ---
@@ -239,9 +260,13 @@ GET    /api/hydrographs/compare/?ids=1,2,3
 
 ### **1. Starting a task:**
 ```bash
-# Read context first
+# ALWAYS read context first
 cat context/current_session.md
 cat context/next_steps.md
+
+# Search before implementing
+grep -r "def calculate_" core/
+grep -r "class.*Serializer" api/
 
 # Create feature branch
 git checkout -b feature/task-name
@@ -252,11 +277,15 @@ git checkout -b feature/task-name
 - Keep functions < 50 lines
 - Separate business logic to services
 - NO code duplication
+- Check Django admin after model changes
 
 ### **3. Before committing:**
 ```bash
 # Run tests
 python -m pytest
+
+# Verify migrations
+python manage.py makemigrations --check
 
 # Check code style
 python -m flake8
@@ -268,6 +297,41 @@ git diff
 ```
 
 **Ver detalles:** `docs/git-workflow.md`
+
+---
+
+## 🔌 MCP Servers Disponibles
+
+Este proyecto tiene **4 MCP servers activos** para mejorar el desarrollo:
+
+### **Playwright** - Testing E2E
+```
+Usar para: Tests automatizados, screenshots, validación de UI
+Ejemplo: "Usa Playwright para probar la calculadora de método racional"
+```
+
+### **Filesystem** - Gestión de archivos
+```
+Path: C:\myprojects\hidro-calc
+Usar para: Operaciones batch en archivos, búsquedas recursivas
+Ejemplo: "Lista todos los archivos de templates Django"
+```
+
+### **GitHub** - Integración repositorio
+```
+Usar para: Issues, PRs, code reviews, historial de commits
+Ejemplo: "Muéstrame los últimos issues del repo"
+```
+
+### **Context7** - Documentación actualizada
+```
+Usar para: Docs de Django/DRF, best practices, API references
+Ejemplo: "Dame ejemplos de ViewSets con Context7"
+```
+
+**PostgreSQL MCP:** Instalado pero inactivo (proyecto usa SQLite)
+
+**Ver configuración completa:** `docs/MCP_SETUP.md`
 
 ---
 
