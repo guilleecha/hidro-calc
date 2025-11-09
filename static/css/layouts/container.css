@@ -1,0 +1,136 @@
+/* ===== LAYOUT: CONTAINERS ===== */
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+.container-sm {
+    max-width: 640px;
+}
+
+.container-md {
+    max-width: 768px;
+}
+
+.container-lg {
+    max-width: 1024px;
+}
+
+.container-xl {
+    max-width: 1280px;
+}
+
+.container-full {
+    max-width: 100%;
+}
+
+/* ===== SECCIONES ===== */
+
+.section {
+    padding: var(--spacing-2xl) 0;
+}
+
+.section-sm {
+    padding: var(--spacing-xl) 0;
+}
+
+.section-lg {
+    padding: var(--spacing-3xl) 0;
+}
+
+/* ===== MAIN LAYOUT ===== */
+
+.main {
+    flex: 1;
+    padding: var(--spacing-2xl) 0;
+}
+
+/* ===== PAGE HEADER ===== */
+
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.page-header h1 {
+    font-size: var(--font-4xl);
+    color: var(--color-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.page-description {
+    font-size: var(--font-lg);
+    color: var(--color-gray-600);
+    margin-top: var(--spacing-sm);
+}
+
+/* ===== CONTENT LAYOUTS ===== */
+
+/* Two column layout */
+.content-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+}
+
+/* Sidebar layout */
+.sidebar-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: var(--spacing-xl);
+}
+
+.sidebar-layout-right {
+    grid-template-columns: 1fr 300px;
+}
+
+/* Three column layout */
+.three-column-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-xl);
+}
+
+/* ===== FORM + RESULTS LAYOUT ===== */
+
+.form-section {
+    /* Columna izquierda para formulario */
+}
+
+.results-section {
+    /* Columna derecha para resultados */
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 1024px) {
+    .sidebar-layout,
+    .sidebar-layout-right {
+        grid-template-columns: 1fr;
+    }
+
+    .three-column-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 0 var(--spacing-sm);
+    }
+
+    .content-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header h1 {
+        font-size: var(--font-3xl);
+    }
+
+    .page-description {
+        font-size: var(--font-base);
+    }
+}

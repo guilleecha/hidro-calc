@@ -1,23 +1,76 @@
 # 🎯 Estado Actual del Proyecto - Sesión Actual
 
-**Última actualización:** 2025-11-08 17:15
-**Sesión:** #7 - CLAUDE.md mejorado + MCP Servers configurados
-**Estado general:** ✅ MCP Servers funcionales + Documentación actualizada
+**Última actualización:** 2025-11-09 21:30
+**Sesión:** #9 - Multi-App Architecture Implementada
+**Estado general:** ✅ Arquitectura multi-app completada + 151 tests pasando
 
 ---
 
 ## ✅ Última Tarea Completada
 
-**Configuración completa de MCP Servers**
-- ✅ CLAUDE.md mejorado con prefix requerido y mejoras
-- ✅ Context7 API key obtenida y configurada
-- ✅ 4 de 5 MCP servers completamente funcionales:
-  - ✅ Playwright v0.0.46
-  - ✅ Filesystem v2025.8.21
-  - ✅ GitHub v2025.4.8
-  - ✅ Context7 v1.0.26
-- ✅ Documentación actualizada (CLAUDE.md, MCP_SETUP.md)
-- ⚠️ PostgreSQL MCP instalado pero inactivo (proyecto usa SQLite)
+**Sesión #9: Multi-App Architecture Implementada**
+
+### **1. Reorganización de Models** ✅ COMPLETADO
+- ✅ Dividido `core/models.py` (478 líneas) en 5 archivos modulares
+- ✅ Estructura `core/models/` con un archivo por modelo
+- ✅ Backward compatibility mantenida via `__init__.py`
+- ✅ 151/151 tests pasando sin cambios
+- ⏱️ Tiempo real: ~45 minutos
+
+**Estructura implementada:**
+```
+core/models/
+├── __init__.py          # Re-exports para backward compatibility
+├── project.py           # ELIMINADO - movido a projects/
+├── watershed.py         # ELIMINADO - movido a watersheds/
+├── design_storm.py      # ELIMINADO - movido a hydrology/
+├── hydrograph.py        # ELIMINADO - movido a hydrology/
+└── rainfall_data.py     # ELIMINADO - movido a hydrology/
+```
+
+### **2. Multi-App Architecture** ✅ COMPLETADO
+- ✅ Creadas 3 nuevas apps especializadas
+- ✅ Modelos migrados a sus respectivas apps
+- ✅ Django Admin configurado en cada app
+- ✅ Migraciones aplicadas sin pérdida de datos
+- ✅ Tests 100% pasando (151/151)
+- ⏱️ Tiempo real: ~2 horas
+
+**Apps creadas:**
+
+```
+projects/               # 🆕 Gestión de proyectos
+├── models.py           # Project
+├── admin.py            # ProjectAdmin
+├── migrations/         # 0001_initial.py
+└── apps.py
+
+watersheds/             # 🆕 Cuencas hidrográficas
+├── models.py           # Watershed
+├── admin.py            # WatershedAdmin
+├── migrations/         # 0001_initial.py
+└── apps.py
+
+hydrology/              # 🆕 Análisis hidrológico
+├── models.py           # DesignStorm, Hydrograph, RainfallData
+├── admin.py            # 3 Admin classes
+├── migrations/         # 0001_initial.py
+└── apps.py
+```
+
+### **3. Archivos Actualizados** ✅
+- ✅ `hidrocal_project/settings.py` - 3 apps agregadas a INSTALLED_APPS
+- ✅ `core/models/__init__.py` - Re-exports desde nuevas apps
+- ✅ `core/admin.py` - Vaciado (delegado a apps)
+- ✅ `core/models.py` - ELIMINADO (monolítico legacy)
+- ✅ Archivos antiguos de `core/models/*.py` - ELIMINADOS
+
+### **4. Migraciones Django** ✅
+- ✅ `core/migrations/0002_*.py` - Elimina modelos de core
+- ✅ `projects/migrations/0001_initial.py` - Crea Project
+- ✅ `watersheds/migrations/0001_initial.py` - Crea Watershed
+- ✅ `hydrology/migrations/0001_initial.py` - Crea 3 modelos
+- ✅ Base de datos migrada sin pérdida de datos
 
 ---
 
@@ -31,36 +84,32 @@
 
 ### **Base de Datos:**
 - Estado: ✅ Migrada completamente a Django
-- Ubicación: `hidrocal_django.db` (450 KB)
-- Registros: 1 proyecto, 3 cuencas, 12 tormentas, 0 hidrogramas
+- Ubicación: `hidrocal_django.db` (actualizada)
+- Modelos: 5 modelos distribuidos en 3 apps especializadas
+- Apps: projects (1), watersheds (1), hydrology (3)
 - Comando seed: `python manage.py seed_database --clear`
 
 ### **API REST:**
 - Estado: ✅ Completamente funcional
 - Endpoints: 30+ endpoints disponibles
 - Documentación: ✅ Swagger UI y ReDoc configurados
-- Testing: Manual (curl) ✅
 
-### **MCP Servers:**
-- Estado: ✅ 4 de 5 activos y configurados
-- Playwright: ✅ v0.0.46 (Testing E2E)
-- Filesystem: ✅ v2025.8.21 (Gestión archivos)
-- GitHub: ✅ v2025.4.8 (Integración repo)
-- Context7: ✅ v1.0.26 (Docs actualizadas)
-- PostgreSQL: ⚠️ v0.6.2 (Instalado, sin BD activa)
+### **Frontend:**
+- **CSS:** ✅ Sistema modular nuevo + legacy compatible
+- **Templates:** Parcialmente migrados (rational.html, idf.html actualizados)
+- **JavaScript:** Vanilla JS (idf.js, rational.js funcionales)
 
-### **Modelos:**
-- ✅ Project (proyectos hidrológicos)
-- ✅ Watershed (cuencas)
-- ✅ DesignStorm (tormentas de diseño)
-- ✅ Hydrograph (hidrogramas)
-- ✅ RainfallData (datos de lluvia)
+### **Testing:**
+- Estado: ✅ 151 tests funcionando (100% passing)
+- Ubicación: `tests/calculators/`
+- Framework: pytest-django
+- Coverage: Calculators cubiertos, resto pendiente
 
-### **Archivos Clave:**
-- `core/models.py` - Modelos Django ORM (480 líneas)
-- `api/serializers.py` - Serializers DRF (380 líneas)
-- `api/views.py` - ViewSets (300 líneas)
-- `core/admin.py` - Django Admin (150 líneas)
+### **Calculadoras:**
+- ✅ Método Racional - funcional
+- ✅ Curvas IDF Uruguay - funcional
+- Backend: Servicios en `calculators/services/`
+- Frontend: Templates Django + JS vanilla
 
 ---
 
@@ -68,140 +117,266 @@
 
 ```
 hidro-calc/
-├── context/              [NUEVO] - Contexto de sesiones
-├── old/                  [NUEVO] - Archivos obsoletos de FastAPI
-├── work_log/             - Documentación de sesiones (4 archivos)
-├── core/                 - App principal (models, admin, management)
-├── api/                  - API REST (serializers, views, urls)
-├── calculators/          - Calculadoras rápidas (pendiente migrar)
-├── studio/               - HidroStudio Professional (pendiente)
-├── templates/            - Templates Django
-├── static/               - CSS, JS, imágenes
-├── hidrocal_project/     - Configuración Django
-├── data/                 - Datos de configuración
-├── docs/                 - Documentación adicional
-├── tests/                - Tests (pendiente)
-└── src_fastapi_backup/   - Backup código FastAPI original
+├── context/              # ✅ Sistema de contexto
+├── docs/                 # ✅ Documentación técnica
+│   ├── models-reorganization.md      # ✅ IMPLEMENTADO
+│   ├── apps-reorganization.md        # ✅ IMPLEMENTADO
+│   ├── coding-standards.md
+│   ├── testing-guide.md
+│   ├── error-handling.md
+│   └── architecture-decisions.md
+├── static/css/           # ✅ CSS modular organizado
+│   ├── base/
+│   ├── layouts/
+│   ├── components/
+│   ├── utilities/
+│   ├── main.css
+│   └── README.md
+├── core/                 # ✅ Refactorizado - utilidades compartidas
+│   ├── models/
+│   │   └── __init__.py   # Re-exports para backward compatibility
+│   └── admin.py          # Delegado a apps
+├── projects/             # 🆕 App de proyectos
+│   ├── models.py         # Project
+│   ├── admin.py
+│   └── migrations/
+├── watersheds/           # 🆕 App de cuencas
+│   ├── models.py         # Watershed
+│   ├── admin.py
+│   └── migrations/
+├── hydrology/            # 🆕 App de hidrología
+│   ├── models.py         # DesignStorm, Hydrograph, RainfallData
+│   ├── admin.py
+│   └── migrations/
+├── api/                  # ✅ API REST
+├── calculators/          # ✅ Calculadoras rápidas
+│   ├── services/
+│   ├── utils/
+│   └── templates/
+├── studio/               # ⚠️ Vacío (pendiente)
+├── tests/                # ✅ 151 tests
+└── work_log/             # ✅ Documentación sesiones
 ```
 
 ---
 
-## 🚀 Servidor y Comandos
+## 📊 Refactoring Completado
 
-### **Servidor de desarrollo:**
-```bash
-python manage.py runserver
-# http://localhost:8000
-# http://localhost:8000/admin (admin/admin123)
-# http://localhost:8000/api/
-# http://localhost:8000/api/docs/ (Swagger UI)
-# http://localhost:8000/api/redoc/ (ReDoc)
+### **1. Models Reorganization** ✅ IMPLEMENTADO
+**Archivo:** `docs/models-reorganization.md`
+
+**Resultado:** Dividido `core/models.py` (478 líneas) en estructura modular
+
+**Estructura final:**
+```
+core/models/
+└── __init__.py          # Re-exports desde nuevas apps
+
+projects/models.py       # Project (87 líneas)
+watersheds/models.py     # Watershed (106 líneas)
+hydrology/models.py      # DesignStorm, Hydrograph, RainfallData (307 líneas)
 ```
 
-### **Base de datos:**
-```bash
-# Ver migraciones
-python manage.py showmigrations
+**Logros:**
+- ✅ Un archivo por app/dominio
+- ✅ Fácil navegación y edición
+- ✅ 100% compatible (imports siguen funcionando)
+- ✅ Tests 151/151 pasando
+- ✅ Git-friendly
 
-# Aplicar migraciones
-python manage.py migrate
-
-# Crear migraciones
-python manage.py makemigrations
-
-# Seed de datos
-python manage.py seed_database --clear
-```
-
-### **Django shell:**
-```bash
-python manage.py shell
-```
+**Estado:** ✅ COMPLETADO (2025-11-09)
+**Tiempo real:** 45 minutos
 
 ---
 
-## ⚠️ Problemas Conocidos
+### **2. Apps Reorganization** ✅ IMPLEMENTADO
+**Archivo:** `docs/apps-reorganization.md`
 
-1. **Django Allauth warnings:**
-   - Warnings de configuración deprecated
-   - No afectan funcionalidad
-   - Solución: Actualizar settings.py con nueva sintaxis
+**Resultado:** Proyecto dividido en apps especializadas
 
-2. **PostgreSQL MCP deprecated:**
-   - Package marcado como deprecated en npm
-   - Funciona, pero buscar alternativa futura
+**Estructura implementada:**
+```
+hidro-calc/
+├── core/              # ✅ Utilidades compartidas + re-exports
+├── projects/          # ✅ Gestión de proyectos (Project)
+├── watersheds/        # ✅ Cuencas hidrográficas (Watershed)
+├── hydrology/         # ✅ Análisis hidrológico (3 modelos)
+├── calculators/       # ✅ Calculadoras rápidas
+├── api/               # ✅ API REST
+├── studio/            # ⚠️ Pendiente
+├── data_import/       # ⚠️ Pendiente
+└── accounts/          # ⚠️ Pendiente
+```
 
-3. **Servidor corriendo en background:**
-   - Proceso puede quedar en background
-   - Verificar con `netstat` o `ss` antes de reiniciar
+**Jerarquía de dependencias implementada:**
+```
+Nivel 0: core
+Nivel 1: projects
+Nivel 2: watersheds (→ projects)
+Nivel 3: hydrology (→ watersheds)
+Nivel 4: calculators, api (→ core models via re-exports)
+```
+
+**Logros:**
+- ✅ 3 apps especializadas creadas
+- ✅ Separación clara de responsabilidades
+- ✅ Django Admin en cada app
+- ✅ Migraciones aplicadas sin pérdida de datos
+- ✅ Backward compatibility total
+
+**Estado:** ✅ COMPLETADO (2025-11-09)
+**Tiempo real:** 2 horas
+
+---
+
+## 🚀 Roadmap de Implementación
+
+### **Sprint 1: Refactoring Core** ✅ COMPLETADO
+1. ✅ **Reorganizar models** - Completado 2025-11-09
+   - ✅ Creada carpeta `core/models/`
+   - ✅ Dividido en 5 archivos
+   - ✅ Tests verificados (151/151)
+   - ⏱️ Tiempo: 45 min
+
+2. ✅ **Dividir en apps** - Completado 2025-11-09
+   - ✅ Creadas apps: projects, watersheds, hydrology
+   - ✅ Modelos movidos a apps correspondientes
+   - ✅ Imports actualizados
+   - ✅ Admin configurado en cada app
+   - ⏱️ Tiempo: 2 horas
+
+### **Sprint 2: Frontend Moderno**
+3. **Migrar templates a CSS modular**
+   - Actualizar base.html para usar `main.css`
+   - Reemplazar clases legacy por nuevas
+   - Testing visual
+   - Tiempo: 1-2 horas
+
+4. **Completar calculadoras**
+   - Tiempo de Concentración
+   - Coeficiente ponderado
+   - Número de curva SCS
+   - Tiempo: 3-4 horas
+
+### **Sprint 3: Features Avanzadas**
+5. **Implementar data_import/**
+   - CSV/Excel importers
+   - Validación de datos
+   - Tiempo: 3-4 horas
+
+6. **Desarrollar studio/**
+   - Dashboard
+   - Workflow completo
+   - Tiempo: 4-5 horas
+
+### **Sprint 4: Auth y Deploy**
+7. **Implementar accounts/**
+8. **Preparar para producción**
+
+---
+
+## 🎯 Próxima Sesión - Tareas Prioritarias
+
+### **Opción 1: Migrar Templates a CSS Modular** 🔥 RECOMENDADO
+- Actualizar base.html para usar `main.css`
+- Reemplazar clases en templates existentes
+- Testing visual en calculadoras
+- **Estimado:** 1-2 horas
+- **Riesgo:** Bajo
+- **Beneficio:** UI moderna y consistente
+
+### **Opción 2: Implementar Calculadoras Adicionales**
+- Tiempo de Concentración (Kirpich, SCS, etc.)
+- Coeficiente C ponderado (ya tiene backend)
+- Número de Curva SCS
+- **Estimado:** 3-4 horas
+- **Riesgo:** Bajo
+- **Beneficio:** Más features para usuarios
+
+### **Opción 3: Crear Tests para Nuevas Apps**
+- Tests para models de projects/
+- Tests para models de watersheds/
+- Tests para models de hydrology/
+- **Estimado:** 2-3 horas
+- **Riesgo:** Bajo
+- **Beneficio:** Mayor cobertura de tests
+
+### **Opción 4: Implementar data_import/ App**
+- CSV importer para cuencas
+- Excel importer para lluvia
+- Validación de datos
+- **Estimado:** 3-4 horas
+- **Riesgo:** Medio
+- **Beneficio:** Importación masiva de datos
 
 ---
 
 ## 📝 Decisiones Técnicas Recientes
 
-1. **Migración completa a Django** (sobre FastAPI)
-   - Razón: Mejor para proyectos a largo plazo, admin panel, ORM maduro
+### **Sesión #8:**
 
-2. **SQLite en desarrollo** (sobre PostgreSQL)
-   - Razón: Simplicidad, portabilidad
-   - PostgreSQL para producción
+1. **CSS Modular adoptado** (sobre monolítico)
+   - Razón: Mejor mantenibilidad, escalabilidad
+   - Inspiración: HydroML, Tailwind
+   - 13 archivos organizados por función
+   - 100% compatible con legacy
 
-3. **Arquitectura dual propuesta** (Calculadoras + Studio)
-   - Razón: Servir a dos tipos de usuarios
-   - Estado: En planificación
+2. **Plan de refactoring documentado** (antes de implementar)
+   - Razón: Evitar perder progreso entre sesiones
+   - Documentos detallados con checklists
+   - Permite implementación incremental
 
-4. **MCP Servers instalados**
-   - Razón: Mejorar capacidades de desarrollo
-   - Testing automatizado, documentación contextual
+3. **Multi-app architecture decidida** (sobre monolítico)
+   - Razón: Separación de responsabilidades
+   - Inspiración: HydroML (6 apps especializadas)
+   - HidroCalc tendrá 9 apps
+   - Implementar después de models refactor
 
 ---
 
-## 🎯 Siguiente Tarea Sugerida
+## ⚠️ Tareas Pendientes
 
-**Opción 1: Migrar Calculadoras a Django** (Alta Prioridad)
-- Convertir templates Jinja2 a Django templates
-- Adaptar vistas a Django views/class-based views
-- Integrar con nueva API
-- Estimado: 3-4 horas
+### **Alta Prioridad:**
+- [x] Implementar models modular ✅ COMPLETADO
+- [x] Dividir en apps ✅ COMPLETADO
+- [ ] Migrar templates a CSS modular 🔥 PRÓXIMO
+- [ ] Crear tests para nuevas apps
+- [ ] Implementar calculadoras adicionales
 
-**Opción 2: Configurar Testing** (Alta Prioridad)
-- Setup pytest-django
-- Tests unitarios de modelos
-- Tests de API endpoints
-- Tests E2E con Playwright
-- Estimado: 3-4 horas
+### **Media Prioridad:**
+- [ ] Implementar data_import/
+- [ ] Desarrollar HidroStudio Professional
+- [ ] Autenticación (accounts/)
 
-**Opción 3: Implementar HidroStudio Professional** (Media Prioridad)
-- Crear dashboard de proyectos
-- Implementar flujo de análisis completo
-- Vistas para gestión de cuencas
-- Estimado: 4-5 horas
-
-**Opción 4: Autenticación** (Media Prioridad)
-- Configurar Django Allauth
-- JWT para API
-- Sistema de permisos
-- Estimado: 3 horas
+### **Baja Prioridad:**
+- [ ] Migrar de SQLite a PostgreSQL
+- [ ] Docker setup
+- [ ] Deploy en producción
 
 ---
 
 ## 💡 Notas Importantes
 
-- **NO eliminar** `src_fastapi_backup/` - es el código original
-- **NO modificar** archivos en `old/` - solo referencia
-- **Documentar cambios** en `work_log/` después de cada sesión
-- **Actualizar este archivo** al finalizar sesión
+- **Multi-app architecture COMPLETADA** - 3 apps especializadas funcionando
+- **CSS modular creado** pero templates aún usan legacy (compatible)
+- **Backward compatibility 100%** - imports antiguos siguen funcionando
+- **Tests 151/151 pasando** - sin regresiones
+- **NO eliminar** `static/css/style.css` y `forms.css` (legacy, mantener)
+- **Django Admin** funcionando en cada app individual
+- **Migraciones aplicadas** - BD actualizada sin pérdida de datos
 
 ---
 
 ## 🔗 Referencias Rápidas
 
-- **CLAUDE.md:** Guía de arquitectura principal
-- **work_log/00_INDICE_TRABAJO.md:** Índice de todas las sesiones
-- **work_log/04_MIGRACION_DJANGO.md:** Detalles de la migración
-- **MCP_SETUP.md:** Configuración de MCP servers
+- **CLAUDE.md:** Guía principal
+- **docs/models-reorganization.md:** Plan refactor models
+- **docs/apps-reorganization.md:** Plan multi-app
+- **static/css/README.md:** Guía CSS modular
+- **work_log/00_INDICE_TRABAJO.md:** Índice de sesiones
 
 ---
 
-**Estado:** ✅ Sistema estable, listo para continuar desarrollo
-**Prioridad:** Migrar calculadoras o implementar HidroStudio
+**Estado:** ✅ Multi-App Architecture Implementada + Tests Pasando
+**Prioridad:** Migrar templates a CSS modular
+**Próxima sesión:** Actualizar templates para usar nueva estructura CSS

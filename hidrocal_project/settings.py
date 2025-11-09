@@ -50,6 +50,9 @@ INSTALLED_APPS = [
 
     # HidroCalc apps
     'core.apps.CoreConfig',
+    'projects.apps.ProjectsConfig',
+    'watersheds.apps.WatershedsConfig',
+    'hydrology.apps.HydrologyConfig',
     'api.apps.ApiConfig',
     'calculators.apps.CalculatorsConfig',
     'studio.apps.StudioConfig',

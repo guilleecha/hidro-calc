@@ -26,6 +26,9 @@ urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
 
+    # Calculadoras rápidas (sin login)
+    path('calculators/', include('calculators.urls')),
+
     # API REST
     path('api/', include('api.urls')),
 

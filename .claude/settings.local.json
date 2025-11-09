@@ -34,7 +34,21 @@
       "Bash(cmd /c \"echo %APPDATA%\")",
       "Bash(npm install:*)",
       "Bash(tree:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(git mv:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(timeout 5 bash -c 'until curl -s http://localhost:8000 > /dev/null 2>&1; do sleep 0.5; done; echo \"\"Server is up!\"\"')",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(cmd /c \"copy core\\models.py core\\models.py.backup\")",
+      "Bash(cmd /c \"dir /b tests\\*.py\")",
+      "Bash(del:*)",
+      "Bash(cmd /c \"del /q tests\\test_api.py tests\\test_rational.py tests\\test_idf.py\")"
     ],
     "deny": [],
     "ask": []

@@ -1,196 +1,224 @@
 /**
- * idf.js - Lógica del frontend para el módulo de Curvas IDF de Uruguay
- *
- * Maneja la interacción del usuario con el formulario de cálculo de intensidades
- * de lluvia y la comunicación con la API backend.
+ * idf.js - Lógica para Curvas IDF Uruguay
  */
 
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('idf-form');
-    const resultsCard = document.getElementById('results');
-    const submitBtn = form.querySelector('button[type="submit"]');
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Módulo Curvas IDF cargado');
 
-    // Manejo de Tr personalizado
-    const trRadios = document.querySelectorAll('input[name="Tr"]');
-    const trCustomInput = document.getElementById('Tr-custom');
+    // Referencias a elementos del DOM
+    const form = document.getElementById('idfForm');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const citySelect = document.getElementById('city');
+    const P3_10Input = document.getElementById('P3_10');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsContent = document.getElementById('resultsContent');
 
-    trRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.value === 'custom') {
-                trCustomInput.style.display = 'block';
-                trCustomInput.required = true;
-                trCustomInput.focus();
-            } else {
-                trCustomInput.style.display = 'none';
-                trCustomInput.required = false;
-                trCustomInput.value = '';
+    // ===== SELECTOR DE CIUDAD =====
+    if (citySelect) {
+        citySelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            if (selectedValue) {
+                P3_10Input.value = selectedValue;
             }
         });
-    });
+    }
 
-    // Submit del formulario
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // ===== VALIDACIÓN DEL FORMULARIO =====
+    function validateForm() {
+        clearErrors();
 
-        // Obtener valores
-        const P3_10 = parseFloat(document.getElementById('P3_10').value);
+        let isValid = true;
 
-        // Determinar Tr
-        let Tr;
-        const selectedTr = document.querySelector('input[name="Tr"]:checked');
-        if (selectedTr.value === 'custom') {
-            Tr = parseFloat(trCustomInput.value);
-            if (!Tr || isNaN(Tr)) {
-                alert('Por favor, ingrese un período de retorno personalizado válido');
-                trCustomInput.focus();
+        // Validar P3_10
+        const P3_10 = document.getElementById('P3_10').value;
+        const errorP3_10 = validateNumber(P3_10, 50, 100, 'P₃,₁₀');
+        if (errorP3_10) {
+            showError('P3_10', errorP3_10);
+            isValid = false;
+        }
+
+        // Validar Tr
+        const Tr = document.getElementById('Tr').value;
+        const errorTr = validateNumber(Tr, 2, 500, 'Período de retorno');
+        if (errorTr) {
+            showError('Tr', errorTr);
+            isValid = false;
+        }
+
+        // Validar d
+        const d = document.getElementById('d').value;
+        const errorD = validateNumber(d, 0.1, 48, 'Duración');
+        if (errorD) {
+            showError('d', errorD);
+            isValid = false;
+        }
+
+        // Validar Ac (opcional)
+        const Ac = document.getElementById('Ac').value;
+        if (Ac && Ac.trim() !== '') {
+            const errorAc = validateNumber(Ac, 0, 1000, 'Área cuenca');
+            if (errorAc) {
+                showError('Ac', errorAc);
+                isValid = false;
+            }
+        }
+
+        return isValid;
+    }
+
+    // ===== ENVIAR FORMULARIO =====
+    if (form) {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!validateForm()) {
                 return;
             }
-        } else {
-            Tr = parseFloat(selectedTr.value);
-        }
 
-        const d = parseFloat(document.getElementById('d').value);
-        const AcInput = document.getElementById('Ac').value;
-        const Ac = AcInput ? parseFloat(AcInput) : null;
+            // Obtener datos del formulario
+            const P3_10 = parseFloat(document.getElementById('P3_10').value);
+            const Tr = parseFloat(document.getElementById('Tr').value);
+            const d = parseFloat(document.getElementById('d').value);
+            const AcValue = document.getElementById('Ac').value;
+            const Ac = AcValue && AcValue.trim() !== '' ? parseFloat(AcValue) : null;
 
-        // Validaciones básicas
-        if (!validateInputs(P3_10, Tr, d, Ac)) {
-            return;
-        }
-
-        // Deshabilitar botón
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Calculando...';
-
-        try {
-            // Preparar datos
-            const requestData = {
+            const formData = {
                 P3_10: P3_10,
                 Tr: Tr,
                 d: d
             };
 
             if (Ac !== null) {
-                requestData.Ac = Ac;
+                formData.Ac = Ac;
             }
 
-            // Llamada a la API
-            const response = await fetch('/api/calculate-idf', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestData)
+            console.log('Enviando datos:', formData);
+
+            // Mostrar loader
+            showButtonLoader(calculateBtn, true);
+
+            try {
+                // Llamar a la API
+                const result = await fetchAPI('/calculators/api/idf/calculate', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+
+                console.log('Resultado:', result);
+
+                // Mostrar resultados
+                displayResults(result);
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error al calcular: ${error.message}`);
+            } finally {
+                showButtonLoader(calculateBtn, false);
+            }
+        });
+    }
+
+    // ===== MOSTRAR RESULTADOS =====
+    function displayResults(data) {
+        // Ocultar mensaje vacío y mostrar contenido
+        resultsContainer.style.display = 'none';
+        resultsContent.style.display = 'block';
+
+        // Intensidad y Precipitación
+        document.getElementById('result-I-mmh').textContent = formatNumber(data.I_mmh, 4);
+        document.getElementById('result-P-mm').textContent = formatNumber(data.P_mm, 4);
+
+        // Factores de corrección
+        document.getElementById('result-CT').textContent = formatNumber(data.CT, 4);
+        document.getElementById('result-CD').textContent = formatNumber(data.CD, 4);
+        document.getElementById('result-CA').textContent = formatNumber(data.CA, 4);
+
+        // Parámetros de entrada
+        document.getElementById('result-input-P3_10').textContent = data.P3_10;
+        document.getElementById('result-input-Tr').textContent = data.Tr;
+        document.getElementById('result-input-d').textContent = data.d_hours;
+
+        const acElement = document.getElementById('result-input-Ac');
+        if (data.Ac_km2 !== null) {
+            acElement.textContent = `${data.Ac_km2} km²`;
+        } else {
+            acElement.textContent = 'Sin corrección (intensidad puntual)';
+        }
+
+        // Advertencias
+        const warningsContainer = document.getElementById('warningsContainer');
+        const warningsList = document.getElementById('warningsList');
+
+        if (data.warnings && data.warnings.length > 0) {
+            warningsList.innerHTML = '';
+            data.warnings.forEach(warning => {
+                const li = document.createElement('li');
+                li.textContent = warning;
+                warningsList.appendChild(li);
             });
+            warningsContainer.style.display = 'block';
+        } else {
+            warningsContainer.style.display = 'none';
+        }
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Error en el cálculo');
-            }
+        // Scroll suave a resultados
+        resultsContent.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
 
-            const result = await response.json();
+    // ===== LIMPIAR FORMULARIO =====
+    form.addEventListener('reset', function() {
+        clearErrors();
+        resultsContainer.style.display = 'block';
+        resultsContent.style.display = 'none';
 
-            // Mostrar resultados
-            displayResults(result);
-
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-            console.error('Error:', error);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Calcular Intensidad';
+        // Resetear selector de ciudad
+        if (citySelect) {
+            citySelect.selectedIndex = 0;
         }
     });
 
-    /**
-     * Valida los datos de entrada antes de enviar al servidor
-     */
-    function validateInputs(P3_10, Tr, d, Ac) {
-        // Validar P3_10
-        if (isNaN(P3_10) || P3_10 < 50 || P3_10 > 100) {
-            alert('P₃,₁₀ debe estar entre 50 y 100 mm');
-            document.getElementById('P3_10').focus();
-            return false;
-        }
+    // ===== VALIDACIÓN EN TIEMPO REAL =====
+    const inputs = form.querySelectorAll('.form-input');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            // Validar solo el campo que perdió el foco
+            const fieldId = this.id;
+            const value = this.value;
 
-        // Validar Tr
-        if (isNaN(Tr) || Tr < 2) {
-            alert('El período de retorno debe ser mayor o igual a 2 años');
-            return false;
-        }
-
-        if (Tr > 100) {
-            if (!confirm('Período de retorno muy alto (>100 años). Las ecuaciones fueron calibradas hasta Tr=100. ¿Continuar de todas formas?')) {
-                return false;
-            }
-        }
-
-        // Validar duración
-        if (isNaN(d) || d <= 0) {
-            alert('La duración debe ser mayor a 0');
-            document.getElementById('d').focus();
-            return false;
-        }
-
-        if (d > 24) {
-            if (!confirm('Duración mayor a 24 horas. ¿Continuar?')) {
-                return false;
-            }
-        }
-
-        // Validar área (si se proporciona)
-        if (Ac !== null) {
-            if (isNaN(Ac) || Ac < 0) {
-                alert('El área de cuenca debe ser mayor o igual a 0');
-                document.getElementById('Ac').focus();
-                return false;
+            // No validar si está vacío y es opcional (solo Ac)
+            if (fieldId === 'Ac' && (!value || value.trim() === '')) {
+                return;
             }
 
-            if (Ac > 300) {
-                if (!confirm('Área de cuenca muy grande (>300 km²). ¿Continuar?')) {
-                    return false;
-                }
+            let error = null;
+            let min, max, fieldName;
+
+            switch(fieldId) {
+                case 'P3_10':
+                    error = validateNumber(value, 50, 100, 'P₃,₁₀');
+                    break;
+                case 'Tr':
+                    error = validateNumber(value, 2, 500, 'Período de retorno');
+                    break;
+                case 'd':
+                    error = validateNumber(value, 0.1, 48, 'Duración');
+                    break;
+                case 'Ac':
+                    error = validateNumber(value, 0, 1000, 'Área cuenca');
+                    break;
             }
-        }
 
-        return true;
-    }
+            // Limpiar error previo del campo
+            const errorDiv = document.getElementById(`error-${fieldId}`);
+            if (errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.classList.remove('active');
+            }
+            this.classList.remove('error');
 
-    /**
-     * Muestra los resultados en la interfaz
-     */
-    function displayResults(result) {
-        // Valores principales
-        document.getElementById('I-mmh').textContent = result.I_mmh.toFixed(2);
-        document.getElementById('P-mm').textContent = result.P_mm.toFixed(2);
-
-        // Factores
-        document.getElementById('CT').textContent = result.CT.toFixed(4);
-        document.getElementById('CD').textContent = result.CD.toFixed(4);
-        document.getElementById('CA').textContent = result.CA.toFixed(4);
-
-        // Datos de entrada
-        document.getElementById('result-P3_10').textContent = result.P3_10;
-        document.getElementById('result-Tr').textContent = result.Tr;
-        document.getElementById('result-d').textContent = result.d_hours;
-        document.getElementById('result-Ac').textContent =
-            result.Ac_km2 !== null ? `${result.Ac_km2} km²` : 'Sin corrección (puntual)';
-
-        // Mostrar card de resultados
-        resultsCard.style.display = 'block';
-        resultsCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-
-    /**
-     * Manejo de tooltips (opcional)
-     */
-    const tooltips = document.querySelectorAll('.tooltip');
-    tooltips.forEach(tooltip => {
-        tooltip.addEventListener('click', (e) => {
-            e.preventDefault();
-            const title = tooltip.getAttribute('title');
-            if (title) {
-                alert(title);
+            // Mostrar nuevo error si existe
+            if (error) {
+                showError(fieldId, error);
             }
         });
     });

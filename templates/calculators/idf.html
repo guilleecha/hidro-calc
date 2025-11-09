@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/forms.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Curvas IDF Uruguay - Calculadora Rápida</h1>
+    <p class="page-description">
+        Cálculo de Intensidad-Duración-Frecuencia según ecuaciones de Rodríguez Fontal (1980)
+    </p>
+    <p class="page-description">
+        <small>
+            💡 <strong>¿Necesitas guardar tus cálculos?</strong>
+            Usa <a href="/studio">HidroStudio Professional</a> para gestionar proyectos completos.
+        </small>
+    </p>
+</div>
+
+<div class="content-layout">
+    <!-- Formulario de Entrada -->
+    <div class="form-section">
+        <div class="card">
+            <h2>📊 Datos de Entrada</h2>
+
+            <form id="idfForm">
+                <!-- Precipitación P3,10 -->
+                <div class="form-group">
+                    <label for="P3_10" class="form-label">
+                        Precipitación P₃,₁₀
+                        <span class="tooltip" title="Precipitación de 3 horas y 10 años de período de retorno">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="P3_10"
+                            name="P3_10"
+                            class="form-input"
+                            min="50"
+                            max="100"
+                            step="0.1"
+                            value="75"
+                            required
+                        >
+                        <span class="input-unit">mm</span>
+                    </div>
+                    <small class="form-help">Valor entre 50-100 mm. Usa el selector de ciudad o consulta mapas de isoyetas</small>
+                    <div class="form-error" id="error-P3_10"></div>
+                </div>
+
+                <!-- Selector de Ciudad -->
+                <div class="form-group">
+                    <label for="city" class="form-label">
+                        Seleccionar Ciudad de Referencia
+                    </label>
+                    <select id="city" name="city" class="form-input">
+                        <option value="">-- Seleccionar ciudad --</option>
+                        {% for city, value in p3_10_values.items %}
+                        <option value="{{ value }}" {% if city == "Montevideo" %}selected{% endif %}>
+                            {{ city }} ({{ value }} mm)
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-help">Selecciona una ciudad para usar su valor de P₃,₁₀</small>
+                </div>
+
+                <!-- Período de Retorno -->
+                <div class="form-group">
+                    <label for="Tr" class="form-label">
+                        Período de Retorno (Tr)
+                        <span class="tooltip" title="Intervalo promedio entre eventos de igual o mayor magnitud">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="Tr"
+                            name="Tr"
+                            class="form-input"
+                            min="2"
+                            max="200"
+                            step="1"
+                            value="10"
+                            required
+                        >
+                        <span class="input-unit">años</span>
+                    </div>
+                    <small class="form-help">
+                        Típico: Residencial=5, Comercial=10, Obras mayores=25-50 años
+                    </small>
+                    <div class="form-error" id="error-Tr"></div>
+                </div>
+
+                <!-- Duración de la Tormenta -->
+                <div class="form-group">
+                    <label for="d" class="form-label">
+                        Duración de la Tormenta (d)
+                        <span class="tooltip" title="Duración de la lluvia, típicamente igual al tiempo de concentración">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="d"
+                            name="d"
+                            class="form-input"
+                            min="0.1"
+                            max="48"
+                            step="0.1"
+                            value="1"
+                            required
+                        >
+                        <span class="input-unit">horas</span>
+                    </div>
+                    <small class="form-help">
+                        Usa la <a href="/calculators/tc">Calculadora de Tc</a> para obtener el tiempo de concentración
+                    </small>
+                    <div class="form-error" id="error-d"></div>
+                </div>
+
+                <!-- Área de Cuenca (Opcional) -->
+                <div class="form-group">
+                    <label for="Ac" class="form-label">
+                        Área de Cuenca (Ac) - Opcional
+                        <span class="tooltip" title="Área de la cuenca para aplicar corrección por área">ℹ️</span>
+                    </label>
+                    <div class="input-group">
+                        <input
+                            type="number"
+                            id="Ac"
+                            name="Ac"
+                            class="form-input"
+                            min="0"
+                            max="1000"
+                            step="0.1"
+                            placeholder="Dejar vacío para intensidad puntual"
+                        >
+                        <span class="input-unit">km²</span>
+                    </div>
+                    <small class="form-help">
+                        Dejar vacío para calcular intensidad puntual (sin corrección por área)
+                    </small>
+                    <div class="form-error" id="error-Ac"></div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary" id="calculateBtn">
+                        🧮 Calcular Intensidad
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        🔄 Limpiar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="results-section">
+        <!-- Mensaje inicial -->
+        <div id="resultsContainer" class="card empty-state">
+            <div class="empty-icon">📊</div>
+            <h3>Resultados IDF</h3>
+            <p>Completa el formulario y presiona "Calcular Intensidad" para ver los resultados.</p>
+        </div>
+
+        <!-- Contenido de resultados (oculto inicialmente) -->
+        <div id="resultsContent" class="card" style="display: none;">
+            <h2>📈 Resultados del Cálculo IDF</h2>
+
+            <!-- Resultados Principales -->
+            <div class="results-grid">
+                <div class="result-item highlight">
+                    <label>Intensidad (I)</label>
+                    <div class="result-value">
+                        <span id="result-I-mmh">-</span>
+                        <span class="result-unit">mm/h</span>
+                    </div>
+                </div>
+
+                <div class="result-item">
+                    <label>Precipitación Total (P)</label>
+                    <div class="result-value">
+                        <span id="result-P-mm">-</span>
+                        <span class="result-unit">mm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Factores de Corrección -->
+            <div class="factors-section">
+                <h3>Factores de Corrección</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <label>CT (Período de Retorno)</label>
+                        <div class="result-value">
+                            <span id="result-CT">-</span>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>CD (Duración)</label>
+                        <div class="result-value">
+                            <span id="result-CD">-</span>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>CA (Área)</label>
+                        <div class="result-value">
+                            <span id="result-CA">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Parámetros de Entrada -->
+            <div class="parameters-section">
+                <h3>Parámetros Utilizados</h3>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <label>P₃,₁₀</label>
+                        <div class="result-value">
+                            <span id="result-input-P3_10">-</span>
+                            <span class="result-unit">mm</span>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>Tr</label>
+                        <div class="result-value">
+                            <span id="result-input-Tr">-</span>
+                            <span class="result-unit">años</span>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>Duración</label>
+                        <div class="result-value">
+                            <span id="result-input-d">-</span>
+                            <span class="result-unit">horas</span>
+                        </div>
+                    </div>
+
+                    <div class="result-item">
+                        <label>Área Cuenca</label>
+                        <div class="result-value">
+                            <span id="result-input-Ac">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advertencias -->
+            <div id="warningsContainer" class="warnings" style="display: none;">
+                <h3>⚠️ Advertencias</h3>
+                <ul id="warningsList"></ul>
+            </div>
+
+            <!-- Fórmula -->
+            <div class="formula-box">
+                <h3>Fórmula Utilizada</h3>
+                <div class="formula">
+                    I = (P₃,₁₀ × CT × CD × CA) / d
+                </div>
+                <p class="formula-note">
+                    Donde:<br>
+                    I = Intensidad (mm/h)<br>
+                    P₃,₁₀ = Precipitación de 3h y 10 años (mm)<br>
+                    CT = Factor de corrección por período de retorno<br>
+                    CD = Factor de corrección por duración<br>
+                    CA = Factor de corrección por área<br>
+                    d = Duración (horas)
+                </p>
+            </div>
+
+            <!-- Acciones de Exportación -->
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="exportPdfBtn" disabled>
+                    📄 Exportar PDF
+                </button>
+                <button type="button" class="btn btn-secondary" id="exportExcelBtn" disabled>
+                    📊 Exportar Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Información Adicional -->
+        <div class="card info-card">
+            <h3>ℹ️ Acerca de las Curvas IDF</h3>
+            <p>
+                Las curvas IDF (Intensidad-Duración-Frecuencia) relacionan la intensidad de lluvia
+                con su duración y período de retorno para una ubicación específica.
+            </p>
+            <p><strong>Aplicaciones:</strong></p>
+            <ul>
+                <li>Diseño de sistemas de drenaje pluvial</li>
+                <li>Dimensionamiento de alcantarillado</li>
+                <li>Cálculo de caudales de diseño (Método Racional)</li>
+                <li>Estudios de crecidas y control de inundaciones</li>
+            </ul>
+            <p><strong>Referencias:</strong></p>
+            <ul>
+                <li>Rodríguez Fontal (1980) - Curvas IDF de Uruguay</li>
+                <li>Genta et al. (1998) - Actualización de curvas IDF</li>
+                <li>Período de datos: 1906-1980</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/idf.js' %}"></script>
+{% endblock %}

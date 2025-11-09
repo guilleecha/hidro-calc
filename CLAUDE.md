@@ -4,181 +4,161 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-# 🌊 HidroCalc - Project Instructions
+## ⚡ Quick Start
 
-> Plataforma web profesional para cálculos hidrológicos e hidráulicos con Django 5.2.8
+**When starting a session, read in this order:**
 
----
+1. **`context/current_session.md`** - Current state, last task, next steps
+2. **`context/next_steps.md`** - Prioritized roadmap
+3. This file - Technical reference
 
-## ⚡ QUICK START
-
-**🎯 AL COMENZAR UNA SESIÓN, LEER EN ESTE ORDEN:**
-
-1. **context/current_session.md** ⭐ **PRIMERO** - Estado actual, última tarea, próximos pasos
-2. **context/next_steps.md** - Roadmap priorizado
-3. Este archivo - Referencia técnica
-
-**💡 TIP:** El sistema de contexto en `/context` mantiene el estado del proyecto entre sesiones.
+The `/context` system maintains project state between sessions.
 
 ---
 
-## 📚 Documentation Structure
+## 🏗️ High-Level Architecture
 
-**Detailed guides in `/docs` folder:**
+### Django 5.2.8 + DRF Hydrological Platform
 
-- **[docs/coding-standards.md](docs/coding-standards.md)** - Tamaños máximos, naming conventions, anti-patterns
-- **[docs/testing-guide.md](docs/testing-guide.md)** - Testing philosophy, fixtures, ejemplos
-- **[docs/error-handling.md](docs/error-handling.md)** - Error handling strategy, logging
-- **[docs/git-workflow.md](docs/git-workflow.md)** - Git safety protocol, commit format, branching
-- **[docs/architecture-decisions.md](docs/architecture-decisions.md)** - Por qué Django, arquitectura dual, etc.
+**Dual Architecture** (key design decision):
 
-**Context files in `/context`:**
-- `current_session.md` - Estado actual del proyecto
-- `completed_tasks.md` - Historial de sesiones
-- `next_steps.md` - Tareas pendientes priorizadas
-- `architecture_overview.md` - Overview técnico completo
+#### ⚡ Quick Calculators (`/calculators/*`)
+- No login required
+- Stateless calculations (Rational Method, IDF Curves, Tc, Runoff Coefficient)
+- No database persistence
+- PDF/Excel export
 
-**Work log in `/work_log`:**
-- `00_INDICE_TRABAJO.md` - Índice de todas las sesiones
-- `01-07_*.md` - Documentación detallada de cada sesión
+#### 🏢 HidroStudio Professional (`/studio/*`)
+- Login required
+- Full project management with database persistence
+- Integrated workflow: Project → Watershed → Storm → Hydrograph
+- Professional reports and analysis comparison
 
----
+See `docs/architecture-decisions.md` for rationale.
 
-## 🏗️ Stack Tecnológico
-
-### **Backend**
-- Django 5.2.8
-- Django Rest Framework 3.16.1
-- SQLite (dev) / PostgreSQL (prod)
-- Celery 5.5.3 + Redis 7.0.1
-
-### **Frontend**
-- Django Templates
-- Vanilla JavaScript
-- Custom CSS (Tailwind-like)
-
-### **Analysis**
-- NumPy 2.3.4, Pandas 2.3.3, SciPy 1.16.3
-- Matplotlib 3.10.7, Plotly.js 6.4.0
-
----
-
-## 🎯 Arquitectura Dual
-
-**⚡ Calculadoras Rápidas** (`/calculators/*`):
-- Sin login, no persiste datos
-- Método Racional, IDF, Tc, Coeficiente Escorrentía
-
-**🏢 HidroStudio Professional** (`/studio/*`):
-- Login requerido, BD persistente
-- Gestión de proyectos, flujo integrado completo
-
-**Ver detalles:** `docs/architecture-decisions.md`
-
----
-
-## 📦 Project Structure
+### Database Schema
 
 ```
-hidro-calc/
-├── core/              # Models, admin, services
-├── api/               # DRF serializers, views, urls
-├── calculators/       # Calculadoras rápidas (sin BD)
-├── studio/            # HidroStudio Professional (con BD)
-├── context/           # Sistema de contexto de sesiones
-├── docs/              # Documentación detallada
-├── work_log/          # Historial de sesiones
-└── hidrocal_project/  # Settings, main urls
+User (Django Auth)
+  └─1:N─→ Project
+            └─1:N─→ Watershed
+                      ├─1:N─→ DesignStorm
+                      │         └─1:N─→ Hydrograph
+                      └─1:N─→ RainfallData
 ```
+
+**Key Details:**
+- 5 core models in `core/models.py` (~480 lines)
+- Primary keys: Django BigAutoField (integer auto-increment)
+- Time series stored in JSON fields (`hydrograph_data`, `rainfall_series`)
+- Cascading deletes: `CASCADE` for dependent data, `PROTECT` for critical refs
+
+### API Structure
+
+30+ REST endpoints via Django Rest Framework:
+- `api/serializers.py` (~380 lines) - 15+ serializers
+- `api/views.py` (~300 lines) - 5 ViewSets
+- Full Swagger/ReDoc documentation at `/api/docs/`
 
 ---
 
 ## 🚀 Common Commands
 
-### **Development server:**
+### Development
 ```bash
+# Start server
 python manage.py runserver
 
-# URLs disponibles:
+# Access points:
 # http://localhost:8000/admin (admin/admin123)
-# http://localhost:8000/api/
 # http://localhost:8000/api/docs/ (Swagger UI)
-# http://localhost:8000/api/redoc/ (ReDoc)
 ```
 
-### **Database:**
+### Database
 ```bash
-python manage.py migrate              # Aplicar migraciones
-python manage.py makemigrations       # Crear migraciones
-python manage.py seed_database --clear  # Cargar datos de prueba
-python manage.py shell                # Django shell
+python manage.py migrate                    # Apply migrations
+python manage.py makemigrations             # Create migrations
+python manage.py seed_database --clear      # Load test data
+python manage.py shell                      # Django shell
 ```
 
-### **Testing:**
+### Testing
 ```bash
-python -m pytest                      # Run all tests
-python -m pytest tests/test_models.py::TestProject  # Single test
-python -m pytest --cov=core --cov=api  # With coverage
-python -m pytest -v                   # Verbose
-python -m pytest -k "test_watershed"  # Match pattern
+python -m pytest                                      # All tests
+python -m pytest tests/test_models.py::TestProject   # Single test
+python -m pytest --cov=core --cov=api                # With coverage
+python -m pytest -v -k "test_watershed"              # Match pattern
 ```
 
-### **Dependencies:**
+### Dependencies
 ```bash
 pip install -r requirements_django.txt
-pip freeze > requirements_django.txt  # Update after adding packages
 ```
-
-**Ver detalles:** `docs/testing-guide.md`
 
 ---
 
-## 🚨 Critical Rules
+## 🚨 Critical Development Rules
 
-### **1. NO PARTIAL IMPLEMENTATION**
-❌ NEVER leave TODOs or placeholders
-✅ Implement complete functionality or nothing
+### 1. NO PARTIAL IMPLEMENTATION
+Never leave TODOs, placeholders, or incomplete functionality. Implement fully or not at all.
 
-### **2. NO CODE DUPLICATION**
-Always search before writing:
+### 2. NO CODE DUPLICATION
+Always search before implementing:
 ```bash
 grep -r "def calculate_" core/
 grep -r "class.*Service" */services.py
 ```
 
-### **3. SEPARATION OF CONCERNS**
-- Validation → Serializers/Forms
-- Business logic → Services (create in `core/services.py` if complex)
-- HTTP handling → Views
-- Database → Models with custom managers if needed
-- NO mixed concerns, NO business logic in serializers
+### 3. STRICT SEPARATION OF CONCERNS
+- **Validation** → Serializers/Forms
+- **Business logic** → Services (`core/services.py` if complex)
+- **HTTP handling** → Views
+- **Database** → Models (with custom managers if needed)
 
-### **4. TEST EVERY FUNCTION**
-- Cada función pública = 1 test mínimo
-- NO cheater tests (assert True)
-- Use real data, no mocks for DB
+NO mixed concerns. NO business logic in serializers.
 
-### **5. SIZE LIMITS**
+### 4. SIZE LIMITS (Enforced)
 - Functions ≤ 50 lines
 - Models ≤ 15 fields (split if needed)
 - Classes ≤ 10 public methods
 - Files ≤ 500 lines
-- Views > 30 lines → use CBV
+- Views > 30 lines → use Class-Based Views
 
-**Ver más:** `docs/coding-standards.md`
+### 5. TESTING REQUIRED
+Every public function needs at least one test. No placeholder tests (`assert True`). Use real data, minimal mocking for database tests.
+
+See `docs/coding-standards.md` for detailed rules and examples.
 
 ---
 
-## ⚠️ Git Safety
+## 📁 Project Structure
 
-### **NEVER:**
-- ❌ Update git config
-- ❌ Force push to main/master
-- ❌ Skip hooks (--no-verify)
-- ❌ Commit without explicit user request
-- ❌ Commit secrets (.env, credentials, *.key)
+```
+hidro-calc/
+├── context/           # Session state (current_session.md, next_steps.md, etc.)
+├── docs/              # Detailed guides (coding-standards, testing, git-workflow)
+├── work_log/          # Development session history
+├── core/              # Django app - models, admin, management commands
+├── api/               # DRF - serializers, views, urls
+├── calculators/       # Quick calculators (pending Django migration)
+├── studio/            # HidroStudio Professional (pending implementation)
+├── templates/         # Django templates
+├── static/            # CSS, JS, images
+└── hidrocal_project/  # Django settings, main urls
+```
 
-### **Commit format:**
+---
+
+## ⚠️ Git Safety Protocol
+
+**NEVER:**
+- Update git config
+- Force push to main/master
+- Skip hooks (`--no-verify`)
+- Commit without explicit user request
+- Commit secrets (`.env`, credentials, `*.key`)
+
+**Commit format:**
 ```bash
 git commit -m "$(cat <<'EOF'
 <type>: <summary>
@@ -192,177 +172,108 @@ EOF
 )"
 ```
 
-**Ver detalles:** `docs/git-workflow.md`
+See `docs/git-workflow.md` for details.
 
 ---
 
-## 🧪 Error Handling Strategy
+## 🔧 Error Handling Strategy
 
-- **Fail Fast:** Config crítica (DB, SECRET_KEY, models requeridos)
-- **Log and Continue:** Features opcionales (Redis, Celery)
-- **Graceful Degradation:** Servicios externos no críticos
-- **User-Friendly Messages:** Nunca mostrar stack traces al usuario
+- **Fail Fast:** Critical config (DB, SECRET_KEY, required models)
+- **Log and Continue:** Optional features (Redis, Celery)
+- **Graceful Degradation:** Non-critical external services
+- **User-Friendly Messages:** Never expose stack traces to users
 
-**Ver detalles:** `docs/error-handling.md`
-
----
-
-## 📊 Database Models
-
-```
-User (Django Auth)
-  └─1:N─→ Project
-            └─1:N─→ Watershed
-                      ├─1:N─→ DesignStorm
-                      │         └─1:N─→ Hydrograph
-                      └─1:N─→ RainfallData
-```
-
-**Key Implementation Details:**
-- Primary Keys: Django BigAutoField (integer auto-increment)
-- All models have `created_at`, `updated_at` timestamps
-- JSON fields store time series data (`hydrograph_data`, `rainfall_series`)
-- Models location: `core/models.py` (~480 lines)
-- Cascading deletes: Use `CASCADE` for dependent data, `PROTECT` for critical refs
-
-**Ver detalles:** `context/architecture_overview.md`
+See `docs/error-handling.md` for implementation patterns.
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 Active MCP Servers
 
-**30+ endpoints disponibles:**
+4 MCP servers configured for enhanced development:
 
-```
-GET    /api/projects/
-POST   /api/projects/
-GET    /api/projects/{id}/
-GET    /api/projects/{id}/watersheds/
+- **Playwright** (v0.0.46) - E2E testing, UI validation
+- **Filesystem** (v2025.8.21) - Advanced file operations
+- **GitHub** (v2025.4.8) - Repository integration
+- **Context7** (v1.0.26) - Up-to-date library documentation
 
-GET    /api/watersheds/
-POST   /api/watersheds/
-GET    /api/watersheds/{id}/stats/
-
-GET    /api/design-storms/
-POST   /api/design-storms/
-GET    /api/design-storms/?watershed_id=X
-
-GET    /api/hydrographs/
-POST   /api/hydrographs/
-GET    /api/hydrographs/compare/?ids=1,2,3
-```
-
-**Documentación completa:** http://localhost:8000/api/docs/
+See `docs/MCP_SETUP.md` for configuration details.
 
 ---
 
 ## 💡 Development Workflow
 
-### **1. Starting a task:**
+### Starting a Task
 ```bash
-# ALWAYS read context first
+# 1. Read context
 cat context/current_session.md
 cat context/next_steps.md
 
-# Search before implementing
+# 2. Search before implementing (avoid duplication)
 grep -r "def calculate_" core/
 grep -r "class.*Serializer" api/
 
-# Create feature branch
+# 3. Create feature branch
 git checkout -b feature/task-name
 ```
 
-### **2. During development:**
-- Write tests FIRST (TDD)
+### During Development
+- Write tests FIRST (TDD preferred)
 - Keep functions < 50 lines
-- Separate business logic to services
-- NO code duplication
+- Extract business logic to services
 - Check Django admin after model changes
 
-### **3. Before committing:**
+### Before Committing
 ```bash
-# Run tests
-python -m pytest
-
-# Verify migrations
-python manage.py makemigrations --check
-
-# Check code style
-python -m flake8
-
-# Review changes
-git diff
-
-# Commit (only when user asks!)
+python -m pytest                        # Run tests
+python manage.py makemigrations --check # Verify migrations
+git diff                                # Review changes
+# Commit only when user explicitly asks
 ```
-
-**Ver detalles:** `docs/git-workflow.md`
 
 ---
 
-## 🔌 MCP Servers Disponibles
+## 📝 Session End Protocol
 
-Este proyecto tiene **4 MCP servers activos** para mejorar el desarrollo:
-
-### **Playwright** - Testing E2E
-```
-Usar para: Tests automatizados, screenshots, validación de UI
-Ejemplo: "Usa Playwright para probar la calculadora de método racional"
-```
-
-### **Filesystem** - Gestión de archivos
-```
-Path: C:\myprojects\hidro-calc
-Usar para: Operaciones batch en archivos, búsquedas recursivas
-Ejemplo: "Lista todos los archivos de templates Django"
-```
-
-### **GitHub** - Integración repositorio
-```
-Usar para: Issues, PRs, code reviews, historial de commits
-Ejemplo: "Muéstrame los últimos issues del repo"
-```
-
-### **Context7** - Documentación actualizada
-```
-Usar para: Docs de Django/DRF, best practices, API references
-Ejemplo: "Dame ejemplos de ViewSets con Context7"
-```
-
-**PostgreSQL MCP:** Instalado pero inactivo (proyecto usa SQLite)
-
-**Ver configuración completa:** `docs/MCP_SETUP.md`
+**Always update:**
+1. `context/current_session.md` - New state, completed task
+2. `context/completed_tasks.md` - Add session if significant
+3. `work_log/` - Create session file if important changes
 
 ---
 
-## 🎯 Tone and Behavior
+## 🎯 Working Style
 
-- **Be Critical:** Señalar errores y mejores alternativas
-- **Be Skeptical:** Cuestionar decisiones subóptimas
-- **Be Concise:** Respuestas directas, sin florituras
-- **No Flattery:** No dar cumplidos innecesarios
-- **Ask Questions:** Ante duda, preguntar en lugar de asumir
-
----
-
-## 📝 Al Finalizar una Sesión
-
-**SIEMPRE actualizar:**
-1. `context/current_session.md` - Estado nuevo, última tarea completada
-2. `context/completed_tasks.md` - Agregar sesión si es significativa
-3. `work_log/` - Crear archivo de sesión si cambios importantes
+- **Be critical:** Point out errors and better alternatives
+- **Be skeptical:** Question suboptimal decisions
+- **Be concise:** Direct answers, no unnecessary elaboration
+- **Ask questions:** Clarify rather than assume
 
 ---
 
-## 🔗 Quick References
+## 📚 Documentation
+
+**Detailed technical guides:**
+- `docs/coding-standards.md` - Size limits, naming, anti-patterns
+- `docs/testing-guide.md` - Testing philosophy, fixtures, examples
+- `docs/error-handling.md` - Error strategies, logging patterns
+- `docs/git-workflow.md` - Git safety, commit format, branching
+- `docs/architecture-decisions.md` - Why Django, dual architecture
+
+**Context tracking:**
+- `context/architecture_overview.md` - Complete technical overview
+- `context/current_session.md` - Current project state
+- `context/next_steps.md` - Prioritized roadmap
+
+---
+
+## 🔗 Quick Links
 
 - **Repository:** https://github.com/guilleecha/hidro-calc
 - **Django Docs:** https://docs.djangoproject.com/en/5.2/
 - **DRF Docs:** https://www.django-rest-framework.org/
-- **Swagger UI:** http://localhost:8000/api/docs/
 
 ---
 
-**Última actualización:** 2025-11-08
-**Versión:** 3.0-django
-**Estado:** En desarrollo activo
+**Last Updated:** 2025-11-08
+**Version:** 3.0-django
+**Status:** Active development

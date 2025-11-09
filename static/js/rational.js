@@ -16,8 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== CARGAR COEFICIENTES DE REFERENCIA =====
     async function loadRunoffCoefficients() {
         try {
-            const data = await fetchAPI('/api/runoff-coefficients');
-            renderCoefficientsTable(data.coefficients);
+            const data = await fetchAPI('/calculators/api/runoff-coefficients');
+            renderCoefficientsTable(data);
         } catch (error) {
             console.error('Error cargando coeficientes:', error);
         }
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Llamar a la API
-                const result = await fetchAPI('/api/rational', {
+                const result = await fetchAPI('/calculators/api/rational/calculate', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });
