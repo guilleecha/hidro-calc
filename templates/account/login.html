@@ -1,0 +1,57 @@
+{% extends "account/base.html" %}
+{% load i18n %}
+{% load account %}
+
+{% block auth_title %}
+<h2>Iniciar Sesión</h2>
+<p>Accede a tu cuenta de HidroStudio Professional</p>
+{% endblock %}
+
+{% block auth_content %}
+<form method="post" action="{% url 'account_login' %}" class="auth-form">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <div class="form-group">
+        <label for="id_login">{{ form.login.label }}</label>
+        {{ form.login }}
+        {% if form.login.errors %}
+        <div class="form-error">{{ form.login.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="id_password">{{ form.password.label }}</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+        <div class="form-error">{{ form.password.errors }}</div>
+        {% endif %}
+    </div>
+
+    <div class="form-group-checkbox">
+        {{ form.remember }}
+        <label for="id_remember">{{ form.remember.label }}</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+
+    <div class="auth-links">
+        <a href="{% url 'account_reset_password' %}">¿Olvidaste tu contraseña?</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block auth_footer %}
+<p>
+    ¿No tienes una cuenta?
+    <a href="{% url 'account_signup' %}">Regístrate aquí</a>
+</p>
+<p>
+    <a href="{% url 'home' %}">← Volver al inicio</a>
+</p>
+{% endblock %}

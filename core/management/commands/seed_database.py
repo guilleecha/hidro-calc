@@ -8,6 +8,7 @@ Uso: python manage.py seed_database
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from core.models import Project, Watershed, DesignStorm, Hydrograph
+from calculators.services.idf import calculate_intensity_idf
 
 
 class Command(BaseCommand):
@@ -86,30 +87,48 @@ class Command(BaseCommand):
             watersheds.append(watershed)
             self.stdout.write(self.style.SUCCESS(f'  Cuenca creada: {watershed.name}'))
 
-        # Crear tormentas de diseño de ejemplo
-        storm_durations = [2, 6, 12, 24]  # horas
-        return_period = 10  # años
+        # Crear tormentas de diseño de ejemplo usando curvas IDF reales de Uruguay
+        storm_configs = [
+            {'duration': 1, 'return_periods': [5, 10, 25]},
+            {'duration': 2, 'return_periods': [5, 10, 25]},
+            {'duration': 6, 'return_periods': [10, 25, 50]},
+            {'duration': 12, 'return_periods': [10, 25, 50]},
+            {'duration': 24, 'return_periods': [10, 25, 50]},
+        ]
+
+        # Parámetro P3_10 típico para Montevideo (mm)
+        P3_10_montevideo = 70  # Valor típico de la zona costera de Uruguay
 
         storms_created = 0
         for watershed in watersheds:
-            for duration in storm_durations:
-                # Cálculo simplificado de lluvia total usando IDF aproximado
-                # P = a * Tr^b / (D + c)^d (fórmula genérica)
-                # Valores aproximados para Uruguay
-                a, b, c, d = 140, 0.25, 10, 0.8
-                total_rainfall = a * (return_period ** b) / ((duration * 60 + c) ** d)
+            # Convertir área de hectáreas a km²
+            area_km2 = watershed.area_hectareas / 100.0
 
-                storm = DesignStorm.objects.create(
-                    watershed=watershed,
-                    name=f"Tr={return_period}a, D={duration}h",
-                    description=f"Tormenta de diseño para {watershed.name}",
-                    return_period_years=return_period,
-                    duration_hours=duration,
-                    total_rainfall_mm=total_rainfall,
-                    distribution_type='alternating_block',
-                    time_step_minutes=5
-                )
-                storms_created += 1
+            for config in storm_configs:
+                duration = config['duration']
+
+                for return_period in config['return_periods']:
+                    # Calcular intensidad y precipitación usando curvas IDF reales
+                    result = calculate_intensity_idf(
+                        P3_10=P3_10_montevideo,
+                        Tr=return_period,
+                        d=duration,
+                        Ac=area_km2
+                    )
+
+                    total_rainfall = result['P_mm']
+
+                    storm = DesignStorm.objects.create(
+                        watershed=watershed,
+                        name=f"Tr={return_period}a, D={duration}h",
+                        description=f"Tormenta de diseño para {watershed.name} (IDF Uruguay)",
+                        return_period_years=return_period,
+                        duration_hours=duration,
+                        total_rainfall_mm=total_rainfall,
+                        distribution_type='alternating_block',
+                        time_step_minutes=5
+                    )
+                    storms_created += 1
 
         self.stdout.write(self.style.SUCCESS(f'  {storms_created} tormentas de diseño creadas'))
 

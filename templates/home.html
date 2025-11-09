@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}HidroCalc - Plataforma Profesional de Cálculos Hidrológicos{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">💧 HidroCalc</h1>
+            <p class="hero-subtitle">Plataforma profesional para cálculos hidrológicos e hidráulicos</p>
+            <p class="hero-description">
+                Potentes herramientas de análisis hidrológico diseñadas para ingenieros,
+                investigadores y profesionales del agua.
+            </p>
+
+            <div class="hero-actions">
+                {% if user_authenticated %}
+                    <a href="{% url 'studio:index' %}" class="btn btn-primary btn-lg">
+                        📊 Ir al Dashboard
+                    </a>
+                    <a href="{% url 'calculators:rational' %}" class="btn btn-outline btn-lg">
+                        ⚡ Calculadoras Rápidas
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">
+                        🔐 Iniciar Sesión
+                    </a>
+                    <a href="{% url 'calculators:rational' %}" class="btn btn-outline btn-lg">
+                        ⚡ Probar sin Login
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="hero-card">
+                <div class="hero-card-icon">📈</div>
+                <h3>Análisis en Tiempo Real</h3>
+                <p>Visualiza resultados al instante con gráficos interactivos</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <div class="container">
+        <h2 class="section-title">¿Qué puedes hacer con HidroCalc?</h2>
+
+        <div class="features-grid">
+            <!-- Feature 1: Calculadoras -->
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Calculadoras Rápidas</h3>
+                <p class="feature-desc">
+                    Herramientas instantáneas sin necesidad de registro:
+                </p>
+                <ul class="feature-list">
+                    <li>Método Racional</li>
+                    <li>Curvas IDF</li>
+                    <li>Tiempo de Concentración</li>
+                    <li>Coeficiente de Escorrentía</li>
+                </ul>
+                <a href="{% url 'calculators:rational' %}" class="feature-link">
+                    Probar ahora →
+                </a>
+            </div>
+
+            <!-- Feature 2: HidroStudio -->
+            <div class="feature-card featured">
+                <div class="feature-badge">⭐ Profesional</div>
+                <div class="feature-icon">🏢</div>
+                <h3 class="feature-title">HidroStudio Professional</h3>
+                <p class="feature-desc">
+                    Plataforma completa de análisis hidrológico:
+                </p>
+                <ul class="feature-list">
+                    <li>Gestión de proyectos y cuencas</li>
+                    <li>Tormentas de diseño parametrizadas</li>
+                    <li>Hidrogramas con múltiples métodos</li>
+                    <li>Visualizaciones interactivas (Plotly)</li>
+                    <li>Comparación de metodologías</li>
+                </ul>
+                {% if user_authenticated %}
+                    <a href="{% url 'studio:index' %}" class="feature-link">
+                        Ir al Dashboard →
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="feature-link">
+                        Iniciar sesión para acceder →
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Feature 3: API REST -->
+            <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3 class="feature-title">API REST</h3>
+                <p class="feature-desc">
+                    Integra HidroCalc en tus aplicaciones:
+                </p>
+                <ul class="feature-list">
+                    <li>30+ endpoints documentados</li>
+                    <li>Django Rest Framework</li>
+                    <li>Swagger UI / ReDoc</li>
+                    <li>Autenticación segura</li>
+                </ul>
+                <a href="/api/docs/" class="feature-link" target="_blank">
+                    Ver documentación →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tech Stack Section -->
+<section class="tech-stack">
+    <div class="container">
+        <h2 class="section-title">Tecnología de Punta</h2>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <strong>Backend:</strong> Django 5.2.8
+            </div>
+            <div class="tech-item">
+                <strong>API:</strong> Django REST Framework
+            </div>
+            <div class="tech-item">
+                <strong>Análisis:</strong> NumPy, Pandas, SciPy
+            </div>
+            <div class="tech-item">
+                <strong>Visualización:</strong> Plotly.js, Matplotlib
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">¿Listo para comenzar?</h2>
+            <p class="cta-text">
+                Accede a todas las herramientas profesionales de HidroCalc
+            </p>
+            <div class="cta-actions">
+                {% if user_authenticated %}
+                    <a href="{% url 'studio:index' %}" class="btn btn-primary btn-lg">
+                        📊 Ir al Dashboard
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">
+                        🔐 Iniciar Sesión
+                    </a>
+                    <a href="{% url 'account_signup' %}" class="btn btn-outline btn-lg">
+                        📝 Registrarse
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

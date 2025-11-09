@@ -225,6 +225,21 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Cambiar a 'mandatory' en producción
+ACCOUNT_RATE_LIMITS = {
+    # Disable rate limits in development (Redis not required)
+    "login_failed": None,
+    "change_password": None,
+    "manage_email": None,
+    "reauthenticate": None,
+    "reset_password": None,
+    "reset_password_from_key": None,
+    "signup": None,
+}
+
+# Login/Logout redirects
+LOGIN_REDIRECT_URL = '/studio/'  # Redirect to HidroStudio dashboard after login
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # Redirect to home after logout
+LOGIN_URL = '/accounts/login/'  # URL to redirect to for login
 
 # ===== CELERY SETTINGS =====
 CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
@@ -266,12 +281,23 @@ LOGGING = {
 }
 
 # ===== CACHE SETTINGS =====
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+# Use dummy cache in development when Redis is not running
+# Switch to RedisCache in production by setting REDIS_ENABLED=True in .env
+USE_REDIS = config('REDIS_ENABLED', default=False, cast=bool)
+
+if USE_REDIS:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        }
+    }
 
 # ===== SECURITY SETTINGS (para producción) =====
 if not DEBUG:

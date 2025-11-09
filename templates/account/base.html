@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>💧 HidroCalc</h1>
+            {% block auth_title %}{% endblock %}
+        </div>
+
+        <div class="auth-content">
+            {% block auth_content %}{% endblock %}
+        </div>
+
+        <div class="auth-footer">
+            {% block auth_footer %}
+                <p><a href="{% url 'home' %}">← Volver al inicio</a></p>
+            {% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

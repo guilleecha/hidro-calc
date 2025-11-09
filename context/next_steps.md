@@ -7,32 +7,107 @@
 
 ## 🔥 ALTA PRIORIDAD (Hacer Ahora)
 
-### 1. **HidroStudio Phase 2: Visualizaciones con Plotly.js** ⭐ RECOMENDADO
-**Estimado:** 3-4 horas
-**Estado:** Pendiente (Phase 1 completado ✅)
+### 1. **Sistema de Cálculo de Hidrogramas** ⭐⭐⭐ CRÍTICO
+**Estimado:** 8-12 días (ver plan detallado en `docs/hydrograph-calculation.md`)
+**Estado:** En documentación - Listo para implementar
+**Última actualización:** 2025-11-09
 
-**Objetivo:** Cumplir requerimiento del usuario de ver hietogramas, hidrogramas y comparaciones en el dashboard
+**Objetivo:** Implementar cálculo automatizado de hidrogramas a partir de tormentas de diseño
 
-**Tareas:**
-- [ ] Integrar Plotly.js (CDN o static file)
-- [ ] Crear `static/js/plotly-charts.js`
-- [ ] Implementar función `renderHyetograph()` - gráfico de barras
-- [ ] Implementar función `renderHydrograph()` - gráfico de líneas
-- [ ] Implementar función `renderHydrographComparison()` - múltiples líneas
-- [ ] Actualizar views.py para generar datos de gráficos
-- [ ] Actualizar dashboard.html para integrar Plotly
-- [ ] Testing visual de gráficos
+**Problema actual:**
+- Datos de seed_database eran completamente incorrectos (0.73mm en 24h para Tr=10 años) ❌
+- Endpoint `/api/hydrographs/` requiere enviar hidrograma completo ya calculado (no práctico)
+- NO existe servicio de cálculo automático de hidrogramas
+- Falta herramienta para ponderar C y CN por área de subcuencas
+
+**Solución implementada/en progreso:**
+- ✅ Corregidas curvas IDF en seed_database usando Rodríguez Fontal (1980) - Datos ahora realistas (127mm/24h)
+- ✅ Home page con login funcional
+- ✅ Templates de autenticación profesionales
+- ✅ Configuración de redirects después de login
+- 🔄 **PRÓXIMO:** Implementar servicios de cálculo de hidrogramas
+
+**Plan de implementación (ver docs/hydrograph-calculation.md):**
+
+**Sprint 1: Hietogramas y Lluvia Efectiva** (2-3 días) ⭐ SIGUIENTE
+- [ ] Crear `core/services/hyetograph.py`
+  - [ ] `generate_alternating_block()` - Distribución temporal de lluvia
+  - [ ] `generate_chicago()` - Método de Chicago (opcional)
+- [ ] Crear `core/services/rainfall_excess.py`
+  - [ ] `calculate_rainfall_excess_rational()` - Pe = C × P
+  - [ ] `calculate_rainfall_excess_scs()` - SCS Curve Number (futuro)
+- [ ] Tests unitarios para ambos módulos
+
+**Sprint 2: Hidrograma Racional** (2-3 días)
+- [ ] Crear `core/services/hydrograph_calculator.py`
+  - [ ] `calculate_hydrograph_rational()` - Hidrograma triangular
+  - [ ] `calculate_hydrograph()` - Orquestador principal
+- [ ] Integración: hietograma → lluvia efectiva → hidrograma
+- [ ] Tests de integración
+
+**Sprint 3: API Endpoint** (1-2 días)
+- [ ] Crear `POST /api/hydrographs/calculate/`
+  - Body: `{design_storm_id, method, name, custom_params}`
+  - Returns: Hydrograph completo calculado y guardado
+- [ ] Serializers de request/response
+- [ ] Manejo de errores robusto
+- [ ] Actualizar documentación Swagger
+
+**Sprint 4: Herramienta de Ponderación** (2-3 días)
+- [ ] Crear `core/services/parameter_weighting.py`
+  - [ ] `calculate_weighted_C()` - C ponderado por área
+  - [ ] `calculate_weighted_CN()` - CN ponderado por área
+- [ ] Endpoint `POST /api/watersheds/calculate-weighted-parameters/`
+- [ ] UI en HidroStudio para calcular parámetros ponderados
+- [ ] Tests
+
+**Sprint 5: Testing End-to-End** (1 día)
+- [ ] Flujo completo: Login → Dashboard → Seleccionar tormenta → Calcular hidrograma → Visualizar
+- [ ] Comparación de múltiples hidrogramas
+- [ ] Verificar datos realistas en visualizaciones
+- [ ] Documentación de usuario
+
+**Flujo de usuario objetivo:**
+```
+1. Login → Dashboard
+2. Seleccionar proyecto → cuenca → tormenta de diseño
+3. Click "Calcular Hidrograma"
+4. Seleccionar método (Racional/SCS/Sintético)
+5. Revisar/ajustar parámetros (C, NC, Tc)
+6. Sistema genera automáticamente:
+   - Hietograma (distribución temporal de lluvia)
+   - Lluvia efectiva (con pérdidas por infiltración)
+   - Hidrograma resultante
+7. Visualización interactiva con Plotly
+8. Comparar con otros métodos
+```
+
+**Archivos a crear:**
+- `core/services/hyetograph.py` (nuevo)
+- `core/services/rainfall_excess.py` (nuevo)
+- `core/services/hydrograph_calculator.py` (nuevo)
+- `core/services/parameter_weighting.py` (nuevo)
+- `tests/core/test_hyetograph.py` (nuevo)
+- `tests/core/test_rainfall_excess.py` (nuevo)
+- `tests/core/test_hydrograph_calculator.py` (nuevo)
 
 **Archivos a modificar:**
-- `static/js/plotly-charts.js` (crear)
-- `studio/views.py` (agregar generación de datos)
-- `templates/studio/dashboard.html` (integrar JS)
-- `templates/base.html` (agregar Plotly CDN)
+- `api/views.py` - Agregar action `calculate()` en HydrographViewSet
+- `api/serializers.py` - Agregar serializer para request de cálculo
+- `studio/views.py` - Integrar con UI (futuro)
+- `templates/studio/dashboard.html` - Botón "Calcular Hidrograma" (futuro)
 
-**Beneficio:**
-- Dashboard funcional y demo-able
-- Cumple requerimiento principal del usuario
-- Base para Phase 3 (comparación avanzada)
+**Beneficios:**
+- ✅ Datos de prueba ahora son realistas (IDF Uruguay)
+- ✅ Usuario puede generar hidrogramas automáticamente
+- ✅ Comparación de metodologías (Racional vs SCS vs Sintético)
+- ✅ Herramienta profesional de ponderación de parámetros
+- ✅ Base sólida para análisis hidrológico completo
+
+**Referencias técnicas:**
+- Ver documento completo: `docs/hydrograph-calculation.md`
+- Curvas IDF: `calculators/services/idf.py` (Rodríguez Fontal 1980)
+- Método Racional: `calculators/services/rational.py`
 
 ---
 

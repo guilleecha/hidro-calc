@@ -50,7 +50,10 @@
       "Bash(del:*)",
       "Bash(cmd /c \"del /q tests\\test_api.py tests\\test_rational.py tests\\test_idf.py\")",
       "Bash(cmd /c \"copy hydrology\\models.py hydrology\\models.py.backup\")",
-      "Bash(cmd /c \"copy watersheds\\models.py watersheds\\models.py.backup\")"
+      "Bash(cmd /c \"copy watersheds\\models.py watersheds\\models.py.backup\")",
+      "Bash(timeout 5 bash -c 'until curl -s -I http://localhost:8000/accounts/login/ | grep -q \"\"HTTP/1.1 200\"\"; do sleep 0.5; done; echo \"\"Login page is up!\"\"')",
+      "Bash(cmd /c \"move core\\services\\hyetograph.py hydrology\\services\\hyetograph.py\")",
+      "Bash(cmd /c \"move core\\services\\rainfall_excess.py hydrology\\services\\rainfall_excess.py\")"
     ],
     "deny": [],
     "ask": []

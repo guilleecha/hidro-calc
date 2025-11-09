@@ -21,8 +21,12 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from core import views as core_views
 
 urlpatterns = [
+    # Home Page
+    path('', core_views.home, name='home'),
+
     # Django Admin
     path('admin/', admin.site.urls),
 
