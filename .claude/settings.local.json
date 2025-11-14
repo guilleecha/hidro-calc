@@ -53,7 +53,14 @@
       "Bash(cmd /c \"copy watersheds\\models.py watersheds\\models.py.backup\")",
       "Bash(timeout 5 bash -c 'until curl -s -I http://localhost:8000/accounts/login/ | grep -q \"\"HTTP/1.1 200\"\"; do sleep 0.5; done; echo \"\"Login page is up!\"\"')",
       "Bash(cmd /c \"move core\\services\\hyetograph.py hydrology\\services\\hyetograph.py\")",
-      "Bash(cmd /c \"move core\\services\\rainfall_excess.py hydrology\\services\\rainfall_excess.py\")"
+      "Bash(cmd /c \"move core\\services\\rainfall_excess.py hydrology\\services\\rainfall_excess.py\")",
+      "Bash(cmd /c \"copy studio\\forms.py studio\\forms\\project_form.py\")",
+      "Bash(cmd /c \"del studio\\forms.py\")",
+      "Bash(cmd /c \".venv\\Scripts\\pip.exe list | findstr Django\")",
+      "Bash(.venv/Scripts/pip.exe:*)",
+      "Bash(.venv/Scripts/python.exe manage.py check)",
+      "Bash(.venv/Scripts/python.exe -m pytest hydrology/tests/test_hydrograph_calculator.py -v)",
+      "Bash(rm nul 2)"
     ],
     "deny": [],
     "ask": []

@@ -326,3 +326,32 @@
         padding: var(--spacing-2xl) var(--spacing-md);
     }
 }
+
+/* ===== BUTTON OVERRIDES FOR HERO SECTION ===== */
+/* Override outline button for white-on-blue in hero */
+.hero .btn-outline {
+    border-color: white;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.hero .btn-outline:hover {
+    background: white;
+    color: var(--color-primary);
+    border-color: white;
+}
+
+/* Override outline button for white-on-blue in CTA */
+.cta .btn-outline {
+    border-color: white;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+}
+
+.cta .btn-outline:hover {
+    background: white;
+    color: var(--color-primary);
+    border-color: white;
+}
