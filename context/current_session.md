@@ -1,122 +1,143 @@
 # 🎯 Estado Actual del Proyecto - Sesión Actual
 
 **Última actualización:** 2025-11-09
-**Sesión:** #10 - HidroStudio Professional Phase 1 Completado
-**Estado general:** ✅ Dashboard básico funcional + 5 vistas + 3 templates
+**Sesión:** #9 - Peak Position + Project Forms + Arquitectura Modular
+**Estado general:** ✅ Hietogramas con peak position + Forms modular + Views modular
 
 ---
 
 ## ✅ Última Tarea Completada
 
-**Sesión #10: HidroStudio Professional - Phase 1 (Dashboard Básico)**
+**Sesión #9: Peak Position en Hietogramas + Arquitectura Modular**
 
-### **Objetivo Completado** ✅
-Implementar dashboard profesional tipo Excel para análisis hidrológico con:
-- Hietogramas (visualización de lluvia)
-- Hidrogramas (visualización de caudal)
-- Información pertinente de cuenca
-- Comparación de metodologías
+### **Objetivos Completados** ✅
 
-**Tiempo real:** ~2 horas
+1. **Peak Position en Hietogramas**
+   - Campo `peak_position_ratio` agregado a `DesignStorm` (0.0-1.0)
+   - Usuario puede definir posición del pico (0.0=inicio, 0.5=centro, 1.0=final)
+   - Servicio de hietogramas actualizado
+   - API serializers actualizados
+
+2. **Sistema de Creación de Proyectos**
+   - Eliminada dependencia del Django Admin
+   - Formulario profesional en HidroStudio
+   - Auto-asignación de owner al usuario logueado
+   - Redirect al dashboard después de crear
+
+3. **Refactorización: Arquitectura Modular**
+   - Forms dividido en módulos: `studio/forms/`
+   - Views dividido en módulos: `studio/views/`
+   - Pattern establecido para escalabilidad futura
+
+**Tiempo real:** ~2.5 horas
 
 ---
 
 ## 📁 Archivos Creados en Esta Sesión
 
-### **1. studio/views.py** (159 líneas) ✅
-**Vistas creadas:**
-- `studio_index()` - Entry point con lógica de redirección
-- `dashboard()` - Dashboard principal con datos de proyecto/cuenca
-- `watershed_detail()` - Detalle de cuenca individual
-- `hyetograph_view()` - Vista de hietograma (pendiente datos)
-- `hydrograph_compare()` - Comparación de hidrogramas
+### **1. Migración de Base de Datos**
+- `hydrology/migrations/0002_designstorm_peak_position_ratio.py`
 
-**Características:**
-- Query optimization con `select_related()` y `prefetch_related()`
-- Cálculo de estadísticas (peak discharge, total hydrographs)
-- Context completo para templates
-- Manejo de empty states
+### **2. Módulo Forms (Nuevo)** ✅
+```
+studio/forms/
+├── __init__.py (10 líneas)
+└── project_form.py (68 líneas)
+```
 
-### **2. studio/urls.py** (26 líneas) ✅
-**URLs configuradas:**
-- `/studio/` - Vista principal
-- `/studio/dashboard/` - Dashboard sin proyecto
-- `/studio/dashboard/<project_id>/` - Dashboard con proyecto
-- `/studio/watershed/<watershed_id>/` - Detalle de cuenca
-- `/studio/hyetograph/<storm_id>/` - Hietograma
-- `/studio/compare/<project_id>/` - Comparación
+### **3. Módulo Views (Nuevo)** ✅
+```
+studio/views/
+├── __init__.py (31 líneas)
+├── dashboard_views.py (122 líneas)
+├── project_views.py (32 líneas)
+├── watershed_views.py (24 líneas)
+├── hydrograph_views.py (45 líneas)
+└── chart_helpers.py (180 líneas)
+```
 
-### **3. templates/studio/dashboard.html** (386 líneas) ✅
-**Componentes:**
-- Grid layout (280px sidebar + flexible main)
-- Sidebar con árbol de proyectos/cuencas
-- Stats cards (caudal máx, hidrogramas, tormentas)
-- Info cards (parámetros de cuenca, tormenta)
-- Chart placeholders (listos para Plotly.js)
-- Empty states
+### **4. Templates**
+- `templates/studio/project_create.html` (216 líneas, CSS externo)
 
-**CSS:**
-- Sistema grid moderno
-- Cards con hover effects
-- Tree view navigation
-- Responsive design
+### **5. CSS**
+- `static/studio/css/project-form.css` (136 líneas)
 
-### **4. templates/studio/welcome.html** (265 líneas) ✅
-**Para usuarios no autenticados:**
-- Hero section con presentación
-- 6 feature cards
-- CTA buttons (login, calculadoras)
-- Comparison table (Calculadoras vs Studio)
-
-### **5. templates/studio/no_projects.html** (246 líneas) ✅
-**Para usuarios sin proyectos:**
-- Empty state message
-- Instrucciones paso a paso
-- Links de ayuda
-- Botones de acción
+### **6. Documentación**
+- `work_log/09_HYETOGRAPH_PEAK_POSITION_PROJECT_FORMS.md` (345 líneas)
+- `docs/studio-modular-architecture.md` (285 líneas)
 
 ---
 
 ## 🔧 Archivos Modificados
 
-### **hidrocal_project/urls.py**
-- ✅ Agregado: `path('studio/', include('studio.urls'))`
+### **Modelos y Servicios:**
+1. `hydrology/models/design_storm.py`
+   - Agregado campo `peak_position_ratio` con validación (0.0-1.0)
 
-### **templates/studio/welcome.html & no_projects.html**
-- 🐛 Bug fixed: `NoReverseMatch` error
-- ✅ Cambiado: `{% url 'calculators:index' %}` → `{% url 'calculators:rational' %}`
+2. `hydrology/services/hyetograph.py`
+   - Modificado `generate_hyetograph_alternating_block()` para usar `peak_position_ratio`
+   - Lógica de ordenamiento alternado actualizada
+   - Resultado incluye `peak_position_ratio` y `peak_index`
+
+### **API:**
+3. `api/serializers.py`
+   - Agregado `peak_position_ratio` a `DesignStormSerializer`
+   - Agregado `peak_position_ratio` a `DesignStormCreateSerializer`
+
+### **Studio:**
+4. `studio/urls.py`
+   - Agregada URL: `project/create/`
+
+5. `templates/studio/no_projects.html`
+   - Botón "Crear Proyecto" ahora apunta a `{% url 'studio:project_create' %}`
+   - Instrucciones actualizadas (eliminó referencia a Django Admin)
+
+---
+
+## ❌ Archivos Eliminados
+
+1. `studio/forms.py` → Reemplazado por módulo `studio/forms/`
+2. `studio/views.py` → Reemplazado por módulo `studio/views/`
 
 ---
 
 ## ✅ Testing Realizado
 
-### **Test 1: Welcome Page**
+### **1. Hietogramas con Peak Position**
 ```bash
-curl http://localhost:8000/studio/
-# Status: 200 ✅
-# Content: HidroStudio Professional title ✅
+python manage.py shell -c "
+from hydrology.services.hyetograph import generate_hyetograph
+result = generate_hyetograph(
+    total_rainfall_mm=50.0,
+    duration_hours=2.0,
+    method='alternating_block',
+    P3_10=70, Tr=10,
+    time_step_minutes=10,
+    peak_position_ratio=0.3
+)
+print(f'Pico en índice: {result[\"peak_index\"]} de {result[\"num_intervals\"]}')
+"
 ```
+**Resultado:** ✅ Pico en índice 3 de 12 (25%, cercano a 30%)
 
-### **Test 2: Dashboard with Data**
+**Prueba 2:** `peak_position_ratio=0.7`
+**Resultado:** ✅ Pico en índice 8 de 12 (66.7%, cercano a 70%)
+
+### **2. Imports de Módulos**
 ```bash
-curl http://localhost:8000/studio/dashboard/1/
-# Status: 200 ✅
-# Content: Sistema de Drenaje Montevideo ✅
-# Breadcrumb: Project / Watershed ✅
+python manage.py shell -c "
+from studio.views import studio_index, dashboard, project_create
+from studio.forms import ProjectCreateForm
+print('Imports exitosos')
+"
 ```
+**Resultado:** ✅ Imports exitosos
 
-### **Test 3: Database Seed**
+### **3. Django Check**
 ```bash
-python manage.py seed_database --clear
-# Projects: 1 ✅
-# Watersheds: 3 ✅
-# Design Storms: 12 ✅
+python manage.py check
 ```
-
-**Datos de prueba:**
-- Proyecto: "Sistema de Drenaje Montevideo"
-- Cuencas: Arroyo Miguelete Alto, Arroyo Carrasco Medio, Arroyo Pantanoso
-- 12 tormentas (4 períodos de retorno × 3 cuencas)
+**Resultado:** ✅ System check OK (solo warnings de deprecación de allauth)
 
 ---
 
@@ -130,97 +151,116 @@ python manage.py seed_database --clear
 
 ### **Apps Django:**
 ```
-core/              # ✅ Utilidades + re-exports
+core/              # ✅ Re-exports
 projects/          # ✅ Project model
 watersheds/        # ✅ Watershed model
-hydrology/         # ✅ DesignStorm, Hydrograph, RainfallData
+hydrology/         # ✅ DesignStorm, Hydrograph, RainfallData (+ peak_position_ratio)
 calculators/       # ✅ Calculadoras rápidas
 api/               # ✅ API REST (30+ endpoints)
-studio/            # ✅ HidroStudio Professional (Phase 1 completo)
+studio/            # ✅ HidroStudio Professional
+  ├── views/       # 🆕 Arquitectura modular (6 archivos)
+  └── forms/       # 🆕 Arquitectura modular (2 archivos)
 ```
-
-### **HidroStudio Professional - Estado:**
-- ✅ Phase 1: Dashboard Básico (COMPLETADO)
-- ⏳ Phase 2: Visualizaciones con Plotly.js
-- ⏳ Phase 3: Comparación de métodos
-- ⏳ Phase 4: CRUD completo
-- ⏳ Phase 5: Exportación (PDF, Excel, CSV)
 
 ### **Frontend:**
 - **CSS:** ✅ Sistema modular + legacy compatible
-- **Templates Studio:** ✅ 3 templates responsive
-- **JavaScript:** Vanilla JS (pendiente Plotly.js)
+- **Templates Studio:** ✅ 4 templates (welcome, no_projects, dashboard, project_create)
+- **JavaScript:** Vanilla JS
 
 ### **Testing:**
-- Estado: ✅ 151 tests pasando (100%)
-- Framework: pytest-django
-- Coverage: Calculators cubiertos, resto pendiente
+- Estado: ⚠️ Tests manuales pasando, tests automatizados pendientes
+- Framework: pytest-django (instalado, sin tests escritos aún)
 
 ---
 
-## 📊 Estructura del Dashboard Implementada
+## 🎨 Arquitectura Modular Implementada
 
+### **Pattern Establecido:**
+
+#### Forms:
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  HidroStudio Professional - Proyecto                        │
-├─────────────────────────────────────────────────────────────┤
-│  [🏠 Proyectos] [💧 Cuencas] [🌧️ Tormentas] [📈 Hidrogramas]│
-├──────────────────┬──────────────────────────────────────────┤
-│                  │                                          │
-│  Sidebar (280px) │  Main Workspace                         │
-│                  │                                          │
-│  📁 Proyectos    │  ┌────────────────────────────────┐    │
-│    → Proyecto 1  │  │ Stats Cards                    │    │
-│      💧 Cuenca A │  │ • Caudal Máx                   │    │
-│      💧 Cuenca B │  │ • Hidrogramas                  │    │
-│                  │  │ • Tormentas                    │    │
-│  📊 Análisis     │  └────────────────────────────────┘    │
-│    → Tormentas   │                                          │
-│    → Hidrogramas │  ┌────────────────────────────────┐    │
-│    → Comparar    │  │ Info Cuenca                    │    │
-│                  │  │ • Área, Tc, NC, C              │    │
-│                  │  └────────────────────────────────┘    │
-│                  │                                          │
-│                  │  ┌────────────────────────────────┐    │
-│                  │  │ Chart: Hietograma (Placeholder)│    │
-│                  │  └────────────────────────────────┘    │
-│                  │                                          │
-│                  │  ┌────────────────────────────────┐    │
-│                  │  │ Chart: Hidrogramas (Placeholder│    │
-│                  │  └────────────────────────────────┘    │
-└──────────────────┴──────────────────────────────────────────┘
+app/forms/
+├── __init__.py              # Re-exports
+└── {entity}_form.py         # Formularios específicos
 ```
+
+#### Views:
+```
+app/views/
+├── __init__.py              # Re-exports
+├── {entity}_views.py        # Vistas por entidad
+└── {purpose}_helpers.py     # Funciones auxiliares
+```
+
+### **Beneficios:**
+- ✅ Cumple coding standards (archivo más grande: 180 líneas, límite: 500)
+- ✅ Separación clara de responsabilidades
+- ✅ Fácil navegación y mantenimiento
+- ✅ Preparado para crecimiento (CRUD completo pendiente)
+- ✅ Testing más granular
+
+### **Métricas:**
+- **Antes:** 2 archivos (383 + 68 líneas) = 451 líneas
+- **Después:** 11 archivos, promedio 75 líneas por archivo
+- **Reducción:** 54% en tamaño del archivo más grande (383 → 180 líneas)
 
 ---
 
-## 🎯 Próxima Sesión - Phase 2: Visualizaciones
+## 📊 Estadísticas Globales
 
-### **Objetivo:** Integrar Plotly.js y crear gráficos interactivos
+**Archivos Python Totales:** 87 (sin contar .venv y backups)
+**Líneas de Código:** ~6,100
+**Endpoints API:** 30+
+**Modelos Django:** 5 (Project, Watershed, DesignStorm, Hydrograph, RainfallData)
+**Serializers DRF:** 15+
+**ViewSets:** 5
+**Vistas Studio:** 9 (divididas en 5 archivos)
+**Templates Studio:** 4
+**Forms Studio:** 1 (ProjectCreateForm)
 
-**Tareas prioritarias:**
+**Esta Sesión:**
+- Archivos creados: 13
+- Archivos modificados: 6
+- Archivos eliminados: 2
+- Líneas de código agregadas: ~620
+- Migración de BD: 1
 
-1. **Integrar Plotly.js** (30 min)
-   - Agregar CDN a base.html
-   - Crear `static/js/plotly-charts.js`
-   - Configurar responsive mode
+---
 
-2. **Implementar Hietograma** (1.5 horas)
-   - Generar datos de distribución temporal
-   - Métodos: Alternating Block, Chicago, etc.
-   - Renderizar gráfico de barras interactivo
+## 🎯 Próxima Sesión - Sprint 1: Hydrograph Calculation
 
-3. **Implementar Hidrograma Simple** (1 hora)
-   - Vista para un solo hidrograma
-   - Gráfico de líneas caudal vs tiempo
-   - Hover con información
+### **Prioridad Alta:**
 
-4. **Implementar Comparación** (1.5 horas)
-   - Superponer múltiples hidrogramas
-   - Diferentes colores por método
-   - Leyenda interactiva
-   - Tabla comparativa
+1. **Rainfall Excess Service** 🔥 SIGUIENTE
+   - Crear `hydrology/services/rainfall_excess.py`
+   - `calculate_rainfall_excess_rational()` - Pe = C × P
+   - `calculate_rainfall_excess_scs()` - SCS Curve Number
+   - Tests unitarios
 
-**Estimado total:** 3-4 horas
+2. **Hydrograph Rational Service**
+   - Crear `hydrology/services/hydrograph_calculator.py`
+   - `calculate_hydrograph_rational()` - Hidrograma triangular
+   - Integración: hietograma → lluvia efectiva → hidrograma
+
+3. **API Endpoint para Cálculo**
+   - `POST /api/hydrographs/calculate/`
+   - Body: `{design_storm_id, method, name, custom_params}`
+   - Auto-cálculo de hidrograma completo
+
+**Estimado:** 6-8 horas
+
+### **Prioridad Media:**
+
+4. **Forms CRUD Completo**
+   - `studio/forms/watershed_form.py`
+   - `studio/forms/storm_form.py`
+   - Vistas create/edit/delete para cada entidad
+
+5. **HidroStudio Phase 2: Visualizaciones**
+   - Integrar Plotly.js
+   - Hietogramas interactivos
+   - Comparación de hidrogramas
+   - Demostrar efecto de `peak_position_ratio`
 
 ---
 
@@ -228,197 +268,166 @@ studio/            # ✅ HidroStudio Professional (Phase 1 completo)
 
 ### **1. Seed database no asigna owner**
 - ❌ Proyectos creados sin owner (None)
-- ✅ Workaround: Asignar manualmente con shell
-- 🔧 Solución permanente: Actualizar seed_database command
+- ✅ Workaround: Asignar manualmente con shell o crear desde form
+- 🔧 Solución permanente: Actualizar `seed_database` command
 
-### **2. No hay hidrogramas calculados**
+### **2. No hay hidrogramas calculados automáticamente**
 - ❌ Seed solo crea tormentas, no hidrogramas
-- ❌ Stats cards no muestran datos reales
-- 🔧 Solución: Implementar cálculo automático en Phase 2
+- ❌ Usuario debe crear manualmente vía API
+- 🔧 Solución: Implementar servicio de cálculo automático (Sprint 1)
 
-### **3. No hay autenticación real**
-- ❌ Dashboard accesible sin login
-- 🔧 Solución: Agregar `@login_required` en Phase 4
+### **3. No hay autenticación real en dashboard**
+- ❌ Dashboard accesible sin login (no hay `@login_required`)
+- 🔧 Solución: Agregar decoradores en Phase 4
+
+### **4. Warnings de deprecación (django-allauth)**
+- ⚠️ `ACCOUNT_AUTHENTICATION_METHOD` deprecated
+- ⚠️ `ACCOUNT_EMAIL_REQUIRED` deprecated
+- ⚠️ `ACCOUNT_USERNAME_REQUIRED` deprecated
+- 🔧 Solución: Actualizar settings.py con nueva sintaxis
 
 ---
 
-## 🗂️ Organización de Carpetas
+## 🗂️ Organización de Carpetas Actualizada
 
 ```
 hidro-calc/
 ├── context/              # ✅ Sistema de contexto
 ├── docs/                 # ✅ Documentación técnica
-│   ├── hidrostudio-design.md         # ✅ Diseño completo
-│   ├── models-reorganization.md
-│   ├── apps-reorganization.md
-│   ├── coding-standards.md
-│   ├── testing-guide.md
-│   └── error-handling.md
-├── static/css/           # ✅ CSS modular
-├── core/                 # ✅ Utilidades + re-exports
-├── projects/             # ✅ Project model
-├── watersheds/           # ✅ Watershed model
-├── hydrology/            # ✅ 3 modelos hidrológicos
-├── api/                  # ✅ API REST
-├── calculators/          # ✅ Calculadoras rápidas
-├── studio/               # ✅ HidroStudio (Phase 1)
-│   ├── views.py          # ✅ 5 vistas
-│   ├── urls.py           # ✅ 6 URLs
-│   └── templates/
-│       ├── dashboard.html       # ✅ Main dashboard
-│       ├── welcome.html         # ✅ Landing page
-│       └── no_projects.html     # ✅ Empty state
-├── tests/                # ✅ 151 tests
-└── work_log/             # ✅ Documentación sesiones
-    ├── 00_INDICE_TRABAJO.md         # ✅ Actualizado
-    └── 08_HIDROSTUDIO_PHASE1.md     # ✅ Esta sesión
+│   ├── studio-modular-architecture.md    # 🆕 Nuevo
+│   └── ...
+├── work_log/             # ✅ Sesiones documentadas
+│   ├── 09_HYETOGRAPH_PEAK_POSITION_PROJECT_FORMS.md  # 🆕 Esta sesión
+│   └── ...
+├── static/
+│   └── studio/css/
+│       └── project-form.css              # 🆕 Nuevo
+├── templates/studio/
+│   └── project_create.html               # 🆕 Nuevo
+├── hydrology/
+│   ├── models/
+│   │   └── design_storm.py               # ✏️ Modificado (+ peak_position_ratio)
+│   ├── services/
+│   │   └── hyetograph.py                 # ✏️ Modificado (usa peak_position_ratio)
+│   └── migrations/
+│       └── 0002_designstorm_peak_position_ratio.py  # 🆕 Nueva
+├── studio/
+│   ├── views/                            # 🆕 Módulo nuevo
+│   │   ├── __init__.py
+│   │   ├── dashboard_views.py
+│   │   ├── project_views.py
+│   │   ├── watershed_views.py
+│   │   ├── hydrograph_views.py
+│   │   └── chart_helpers.py
+│   └── forms/                            # 🆕 Módulo nuevo
+│       ├── __init__.py
+│       └── project_form.py
+├── api/
+│   └── serializers.py                    # ✏️ Modificado (+ peak_position_ratio)
+└── ...
 ```
-
----
-
-## 📊 Estadísticas Globales
-
-**Archivos Creados en Proyecto:** 35+
-**Líneas de Código Total:** ~5,600
-**Endpoints API:** 30+
-**Modelos Django:** 5
-**Serializers DRF:** 15+
-**ViewSets:** 5
-**Vistas Studio:** 5
-**Templates Studio:** 3
-**Tests Pasando:** 151/151 (100%)
-
-**Esta Sesión:**
-- Archivos creados: 5
-- Líneas de código: ~1,082
-- Vistas: 5 funciones
-- URLs: 6 patterns
-- Templates: 3 responsive
-
----
-
-## 🚀 Roadmap Actualizado
-
-### **Sprint 1: Refactoring Core** ✅ COMPLETADO
-1. ✅ Reorganizar models
-2. ✅ Dividir en apps (projects, watersheds, hydrology)
-
-### **Sprint 2: HidroStudio Professional**
-3. ✅ **Phase 1: Dashboard Básico** - Completado 2025-11-09
-   - ✅ 5 vistas creadas
-   - ✅ 3 templates responsive
-   - ✅ Sidebar navigation
-   - ✅ Stats & info cards
-   - ⏱️ Tiempo: 2 horas
-
-4. ⏳ **Phase 2: Visualizaciones** - PRÓXIMO
-   - Integrar Plotly.js
-   - Hietograma interactivo
-   - Hidrograma simple
-   - Comparación de hidrogramas
-   - ⏱️ Estimado: 3-4 horas
-
-5. ⏳ **Phase 3: Comparación**
-   - Vista de comparación mejorada
-   - Tabla de análisis
-   - Análisis de sensibilidad
-   - ⏱️ Estimado: 2-3 horas
-
-6. ⏳ **Phase 4: CRUD Completo**
-   - Forms Django para modelos
-   - Crear/editar proyectos, cuencas, tormentas
-   - Calcular hidrogramas
-   - ⏱️ Estimado: 3-4 horas
-
-7. ⏳ **Phase 5: Exportación**
-   - PDF con reportlab
-   - Excel con openpyxl
-   - CSV para otros software
-   - ⏱️ Estimado: 2-3 horas
-
-### **Sprint 3: Frontend Moderno**
-8. **Migrar templates a CSS modular**
-9. **Completar calculadoras adicionales**
-
-### **Sprint 4: Auth y Deploy**
-10. **Implementar accounts/**
-11. **Preparar para producción**
-
----
-
-## 💡 Decisiones Técnicas Recientes
-
-### **Sesión #10:**
-
-1. **Grid Layout con sidebar fijo** (280px)
-   - Razón: Espacio suficiente para navegación jerárquica
-   - Compatible con responsive (mobile pendiente)
-
-2. **Tree view navigation**
-   - Razón: Jerarquía clara Proyectos → Cuencas
-   - Estados activos con CSS classes
-
-3. **Stats cards en lugar de tabla**
-   - Razón: Más visual y fácil de escanear
-   - Hover effects para mejor UX
-
-4. **Chart placeholders**
-   - Razón: Comunicar claramente que Phase 2 está pendiente
-   - Prepara estructura para Plotly.js
-
-5. **Query optimization desde el inicio**
-   - `select_related()` para FK (reduce N+1)
-   - `prefetch_related()` para M2M y reverse FK
-   - Razón: Evitar refactoring futuro por performance
 
 ---
 
 ## 🔗 Referencias Rápidas
 
-- **CLAUDE.md:** Guía principal del proyecto
-- **docs/hidrostudio-design.md:** Diseño completo de HidroStudio (485 líneas)
-- **work_log/08_HIDROSTUDIO_PHASE1.md:** Documentación detallada de esta sesión
-- **work_log/00_INDICE_TRABAJO.md:** Índice actualizado
+**Documentación de esta sesión:**
+- `work_log/09_HYETOGRAPH_PEAK_POSITION_PROJECT_FORMS.md` - Sesión completa
+- `docs/studio-modular-architecture.md` - Arquitectura modular
+
+**Próximos pasos:**
+- `context/next_steps.md` - Roadmap priorizado
+- `docs/hydrograph-calculation.md` - Plan de implementación
+
+**Arquitectura:**
+- `CLAUDE.md` - Guía principal actualizada
+- `docs/coding-standards.md` - Reglas de código
 
 ---
 
 ## ⚠️ Tareas Pendientes
 
 ### **Alta Prioridad:**
-- [x] Implementar models modular ✅
-- [x] Dividir en apps ✅
-- [x] HidroStudio Phase 1: Dashboard básico ✅
-- [ ] **HidroStudio Phase 2: Visualizaciones** 🔥 PRÓXIMO
-- [ ] Actualizar seed_database (asignar owner, calcular hidrogramas)
+- [x] Peak position en hietogramas ✅
+- [x] Forms modular ✅
+- [x] Views modular ✅
+- [ ] **Rainfall Excess Service** 🔥 SIGUIENTE
+- [ ] Hydrograph Calculator Service
+- [ ] API endpoint para auto-cálculo
 
 ### **Media Prioridad:**
-- [ ] HidroStudio Phase 3: Comparación
-- [ ] HidroStudio Phase 4: CRUD
-- [ ] HidroStudio Phase 5: Exportación
-- [ ] Migrar templates a CSS modular
-- [ ] Crear tests para nuevas apps
+- [ ] Forms para Watershed y DesignStorm
+- [ ] Vistas CRUD completas
+- [ ] HidroStudio Phase 2: Plotly.js
+- [ ] Tests automatizados
 
 ### **Baja Prioridad:**
-- [ ] Implementar data_import/
-- [ ] Autenticación (accounts/)
+- [ ] Fix warnings de allauth
+- [ ] Actualizar seed_database (owner assignment)
+- [ ] Autenticación en dashboard
 - [ ] Deploy en producción
 
 ---
 
-## 📚 Documentación Generada
+## 💡 Decisiones Técnicas de Esta Sesión
 
-**En esta sesión:**
-- ✅ `work_log/08_HIDROSTUDIO_PHASE1.md` (completo, 600+ líneas)
-- ✅ `work_log/00_INDICE_TRABAJO.md` (actualizado)
-- ✅ `docs/hidrostudio-design.md` (creado en sesión anterior, 485 líneas)
+1. **Peak Position Ratio (0.0-1.0)**
+   - Razón: Más flexible que porcentaje o tiempo absoluto
+   - Independiente de duración de tormenta
+   - Fácil validación con MinValueValidator/MaxValueValidator
+
+2. **Forms Modular**
+   - Pattern: `app/forms/{entity}_form.py`
+   - Razón: Escalabilidad, organización clara
+   - Beneficio: Fácil agregar WatershedForm, StormForm, etc.
+
+3. **Views Modular**
+   - Pattern: `app/views/{entity}_views.py` + `{purpose}_helpers.py`
+   - Razón: Archivos < 200 líneas, separación de concerns
+   - Beneficio: Testing granular, fácil navegación
+
+4. **CSS Externo (No Embebido)**
+   - Razón: Reutilización, consistencia, mantenibilidad
+   - Beneficio: `project-form.css` usable para otros forms
+
+5. **Auto-asignación de Owner**
+   - Razón: Seguridad, UX simplificado
+   - Implementación: Override del método `save()` en form
 
 ---
 
-**Estado:** ✅ HidroStudio Phase 1 Completado
-**Prioridad:** Phase 2 - Integrar Plotly.js y visualizaciones
-**Próxima sesión:** Crear hietogramas y hidrogramas interactivos
-**Estimado:** 3-4 horas
+## 🚀 Comandos Útiles
+
+### **Iniciar Servidor Django:**
+```bash
+python manage.py runserver
+
+# El servidor estará disponible en:
+# http://localhost:8000
+# http://localhost:8000/admin (admin/admin123)
+# http://localhost:8000/api/docs/ (Swagger UI)
+# http://localhost:8000/studio/ (HidroStudio)
+```
+
+### **Otros Comandos:**
+```bash
+# Migraciones
+python manage.py makemigrations
+python manage.py migrate
+
+# Shell
+python manage.py shell
+
+# Check
+python manage.py check
+
+# Tests
+python -m pytest
+```
 
 ---
 
-**Último commit pendiente:** Phase 1 completo (5 archivos, 1 modificación)
+**Estado:** ✅ Sesión #9 Completada
+**Prioridad:** Rainfall Excess Service (Sprint 1 continúa)
+**Próxima sesión:** Implementar servicios de cálculo hidrológico
+**Última actualización:** 2025-11-09 19:50

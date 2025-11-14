@@ -33,22 +33,33 @@ The `/context` system maintains project state between sessions.
 - Full project management with database persistence
 - Integrated workflow: Project → Watershed → Storm → Hydrograph
 - Professional reports and analysis comparison
+- **Status:** Phase 1 (Dashboard) complete, Phase 2 (Visualizations) next
 
 See `docs/architecture-decisions.md` for rationale.
+
+### Modular App Structure
+
+**Models distributed across focused apps:**
+- `projects/models.py` - Project model
+- `watersheds/models.py` - Watershed model
+- `hydrology/models.py` - DesignStorm, Hydrograph, RainfallData
+- `core/` - Re-exports all models for backward compatibility
+
+**Why modular?** Separation of concerns, clearer dependencies, easier testing.
 
 ### Database Schema
 
 ```
 User (Django Auth)
-  └─1:N─→ Project
-            └─1:N─→ Watershed
-                      ├─1:N─→ DesignStorm
-                      │         └─1:N─→ Hydrograph
-                      └─1:N─→ RainfallData
+  └─1:N─→ Project (projects app)
+            └─1:N─→ Watershed (watersheds app)
+                      ├─1:N─→ DesignStorm (hydrology app)
+                      │         └─1:N─→ Hydrograph (hydrology app)
+                      └─1:N─→ RainfallData (hydrology app)
 ```
 
 **Key Details:**
-- 5 core models in `core/models.py` (~480 lines)
+- 5 models across 3 apps (projects, watersheds, hydrology)
 - Primary keys: Django BigAutoField (integer auto-increment)
 - Time series stored in JSON fields (`hydrograph_data`, `rainfall_series`)
 - Cascading deletes: `CASCADE` for dependent data, `PROTECT` for critical refs
@@ -59,6 +70,7 @@ User (Django Auth)
 - `api/serializers.py` (~380 lines) - 15+ serializers
 - `api/views.py` (~300 lines) - 5 ViewSets
 - Full Swagger/ReDoc documentation at `/api/docs/`
+- **Critical Gap:** Manual hydrograph creation only - auto-calculation service needed (see `docs/hydrograph-calculation.md`)
 
 ---
 
@@ -105,17 +117,24 @@ Never leave TODOs, placeholders, or incomplete functionality. Implement fully or
 ### 2. NO CODE DUPLICATION
 Always search before implementing:
 ```bash
-grep -r "def calculate_" core/
+# Windows
+findstr /s /i "def calculate_" *.py
+findstr /s /i "class.*Service" *.py
+
+# Unix/Git Bash
+grep -r "def calculate_" --include="*.py"
 grep -r "class.*Service" */services.py
 ```
 
 ### 3. STRICT SEPARATION OF CONCERNS
 - **Validation** → Serializers/Forms
-- **Business logic** → Services (`core/services.py` if complex)
+- **Business logic** → Services (create `app/services/*.py` for complex logic)
 - **HTTP handling** → Views
 - **Database** → Models (with custom managers if needed)
 
 NO mixed concerns. NO business logic in serializers.
+
+**Example service location:** Hydrograph calculation → `hydrology/services/hydrograph_calculator.py`
 
 ### 4. SIZE LIMITS (Enforced)
 - Functions ≤ 50 lines
@@ -138,14 +157,19 @@ hidro-calc/
 ├── context/           # Session state (current_session.md, next_steps.md, etc.)
 ├── docs/              # Detailed guides (coding-standards, testing, git-workflow)
 ├── work_log/          # Development session history
-├── core/              # Django app - models, admin, management commands
+├── projects/          # Project model + admin
+├── watersheds/        # Watershed model + admin
+├── hydrology/         # DesignStorm, Hydrograph, RainfallData models
+├── core/              # Re-exports, utilities, management commands
 ├── api/               # DRF - serializers, views, urls
-├── calculators/       # Quick calculators (pending Django migration)
-├── studio/            # HidroStudio Professional (pending implementation)
-├── templates/         # Django templates
+├── calculators/       # Quick calculators (Rational, IDF, Tc)
+├── studio/            # HidroStudio Professional (Phase 1 complete)
+├── templates/         # Django templates (base, auth, studio)
 ├── static/            # CSS, JS, images
 └── hidrocal_project/  # Django settings, main urls
 ```
+
+**Note:** 86 Python files total (excluding .venv and backups)
 
 ---
 
@@ -204,23 +228,29 @@ See `docs/MCP_SETUP.md` for configuration details.
 
 ### Starting a Task
 ```bash
-# 1. Read context
+# 1. Read context (CRITICAL - do this first!)
 cat context/current_session.md
 cat context/next_steps.md
 
 # 2. Search before implementing (avoid duplication)
-grep -r "def calculate_" core/
+# Windows:
+findstr /s /i "def calculate_" *.py
+findstr /s /i "class.*Serializer" *.py
+# Unix/Git Bash:
+grep -r "def calculate_" --include="*.py"
 grep -r "class.*Serializer" api/
 
-# 3. Create feature branch
+# 3. Create feature branch (if significant work)
 git checkout -b feature/task-name
 ```
 
 ### During Development
+- **ALWAYS check `context/next_steps.md`** for current priorities
 - Write tests FIRST (TDD preferred)
 - Keep functions < 50 lines
-- Extract business logic to services
+- Extract business logic to `app/services/` modules
 - Check Django admin after model changes
+- For hydrograph work: See `docs/hydrograph-calculation.md` for detailed implementation plan
 
 ### Before Committing
 ```bash
@@ -274,6 +304,16 @@ git diff                                # Review changes
 
 ---
 
-**Last Updated:** 2025-11-08
+**Last Updated:** 2025-11-09
 **Version:** 3.0-django
 **Status:** Active development
+
+---
+
+## 🎯 Current Priority
+
+**Next Task:** Hydrograph Calculation System (Sprint 1)
+- Implement hietograph generation (Alternating Block method)
+- Implement rainfall excess calculation (Rational & SCS)
+- See `docs/hydrograph-calculation.md` for complete roadmap
+- See `context/next_steps.md` for detailed task breakdown
