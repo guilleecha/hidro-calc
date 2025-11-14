@@ -10,6 +10,11 @@ from .watershed_views import (
     watershed_edit,
     watershed_delete
 )
+from .design_storm_views import (
+    design_storm_create,
+    design_storm_edit,
+    design_storm_delete
+)
 from .hydrograph_views import hyetograph_view, hydrograph_compare
 from .project_views import project_create
 from .chart_helpers import (
@@ -27,6 +32,10 @@ __all__ = [
     'watershed_create',
     'watershed_edit',
     'watershed_delete',
+    # Design Storm views
+    'design_storm_create',
+    'design_storm_edit',
+    'design_storm_delete',
     # Hydrograph views
     'hyetograph_view',
     'hydrograph_compare',
