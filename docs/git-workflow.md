@@ -116,8 +116,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### **Main Branches:**
 
-- `main` - Production-ready code
-- `develop` - Integration branch for features
+- `main` - Production-ready code (releases only)
+- `development` - Integration branch for features & development
 
 ### **Supporting Branches:**
 
@@ -139,14 +139,25 @@ refactor/optimize-database-queries
 
 ## 🔄 Workflow
 
+### **Current Workflow (main + development):**
+
+```
+main (stable)
+  ↑
+  └─ development (active development)
+      ├─ feature/hydrograph-calculation
+      ├─ feature/testing-suite
+      └─ feature/ui-improvements
+```
+
 ### **1. Starting New Work:**
 
 ```bash
-# Update main
-git checkout main
-git pull origin main
+# Update development
+git checkout development
+git pull origin development
 
-# Create feature branch
+# Create feature branch from development
 git checkout -b feature/my-feature
 
 # Work on feature...
@@ -155,28 +166,53 @@ git checkout -b feature/my-feature
 ### **2. During Development:**
 
 ```bash
-# Regular commits
+# Regular commits (local)
 git add .
-git commit -m "feat: implement rational method calculator"
+git commit -m "feat: implement rainfall excess calculation"
 
 # Push to remote
 git push -u origin feature/my-feature
 ```
 
-### **3. Before Merging:**
+### **3. Before Creating PR:**
 
 ```bash
-# Update from main
-git checkout main
-git pull origin main
+# Update feature branch from development
 git checkout feature/my-feature
-git merge main  # or git rebase main
+git pull origin development
+git merge development  # or git rebase development
 
 # Run tests
 python -m pytest
 
 # Push updates
 git push origin feature/my-feature
+```
+
+### **4. PR Workflow:**
+
+```bash
+# Create PR: feature/my-feature → development
+# (NOT directly to main)
+
+gh pr create --base development --title "Add rainfall excess calculation"
+
+# After review and approval, merge to development via GitHub UI
+# Do NOT merge to main - only from development at release time
+```
+
+### **5. Release to main (when ready):**
+
+```bash
+# Only push release-ready code to main
+git checkout main
+git pull origin main
+git merge development
+git push origin main
+
+# Create release tag
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
 ```
 
 ---
@@ -522,4 +558,24 @@ git checkout main
 
 ---
 
-**Última actualización:** 2025-11-08
+## 📌 Current Status (2025-11-14)
+
+### **Branches:**
+- ✅ `main` - Stable release branch (Sprint 1 complete)
+- ✅ `development` - Active development branch (branched from main)
+
+### **Next Session:**
+- Start feature branches from `development`
+- Work on testing suite
+- Create PRs to `development` (not `main`)
+- Release to `main` only when milestone is complete
+
+### **Key Reminders:**
+1. Always branch from `development` for new features
+2. Create PRs against `development` (not main)
+3. Only `main` → `development` for releases
+4. Tag releases on `main` with semantic versions (v1.0.0)
+
+---
+
+**Última actualización:** 2025-11-14
