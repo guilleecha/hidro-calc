@@ -1,0 +1,165 @@
+{% extends "studio/watershed_create.html" %}
+
+{% block title %}Editar Cuenca - HidroStudio{% endblock %}
+
+{% block content %}
+<div class="watershed-form-container">
+    <!-- Breadcrumb -->
+    {% if project %}
+    <div class="breadcrumb-section">
+        <ul class="breadcrumb">
+            <li><a href="{% url 'studio:index' %}">HidroStudio</a></li>
+            <li class="breadcrumb-separator">/</li>
+            <li><a href="{% url 'studio:dashboard_project' project.id %}">{{ project.name }}</a></li>
+            <li class="breadcrumb-separator">/</li>
+            <li><a href="{% url 'studio:watershed_detail' watershed.id %}">{{ watershed.name }}</a></li>
+            <li class="breadcrumb-separator">/</li>
+            <li>Editar</li>
+        </ul>
+    </div>
+    {% endif %}
+
+    <h1 style="margin-bottom: 10px;">Editar Cuenca</h1>
+    <p style="color: #666; margin-bottom: 30px;">
+        Actualiza los parámetros de la cuenca
+    </p>
+
+    <!-- Mostrar errores generales -->
+    {% if form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <div class="alert alert-error">
+            {{ error }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="">
+        {% csrf_token %}
+
+        <!-- Sección: Información Básica -->
+        <div class="form-section">
+            <h2 class="form-section-title">Información Básica</h2>
+            <div class="form-grid full">
+                <div class="form-group">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {% if form.name.help_text %}
+                    <small class="help-text">{{ form.name.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.name.errors %}
+                    <div class="error-message">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-grid full">
+                <div class="form-group">
+                    {{ form.description.label_tag }}
+                    {{ form.description }}
+                    {% if form.description.help_text %}
+                    <small class="help-text">{{ form.description.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.description.errors %}
+                    <div class="error-message">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Características Hidrológicas -->
+        <div class="form-section">
+            <h2 class="form-section-title">Características Hidrológicas</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.area_hectareas.label_tag }}
+                    {{ form.area_hectareas }}
+                    {% if form.area_hectareas.help_text %}
+                    <small class="help-text">{{ form.area_hectareas.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.area_hectareas.errors %}
+                    <div class="error-message">{{ form.area_hectareas.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.tc_horas.label_tag }}
+                    {{ form.tc_horas }}
+                    {% if form.tc_horas.help_text %}
+                    <small class="help-text">{{ form.tc_horas.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.tc_horas.errors %}
+                    <div class="error-message">{{ form.tc_horas.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.c_racional.label_tag }}
+                    {{ form.c_racional }}
+                    {% if form.c_racional.help_text %}
+                    <small class="help-text">{{ form.c_racional.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.c_racional.errors %}
+                    <div class="error-message">{{ form.c_racional.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.nc_scs.label_tag }}
+                    {{ form.nc_scs }}
+                    {% if form.nc_scs.help_text %}
+                    <small class="help-text">{{ form.nc_scs.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.nc_scs.errors %}
+                    <div class="error-message">{{ form.nc_scs.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección: Ubicación Geográfica -->
+        <div class="form-section">
+            <h2 class="form-section-title">Ubicación Geográfica (Opcional)</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    {{ form.latitude.label_tag }}
+                    {{ form.latitude }}
+                    {% if form.latitude.help_text %}
+                    <small class="help-text">{{ form.latitude.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.latitude.errors %}
+                    <div class="error-message">{{ form.latitude.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.longitude.label_tag }}
+                    {{ form.longitude }}
+                    {% if form.longitude.help_text %}
+                    <small class="help-text">{{ form.longitude.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.longitude.errors %}
+                    <div class="error-message">{{ form.longitude.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.elevation_m.label_tag }}
+                    {{ form.elevation_m }}
+                    {% if form.elevation_m.help_text %}
+                    <small class="help-text">{{ form.elevation_m.help_text|safe }}</small>
+                    {% endif %}
+                    {% if form.elevation_m.errors %}
+                    <div class="error-message">{{ form.elevation_m.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <a href="{% url 'studio:watershed_detail' watershed.id %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url 'studio:watershed_delete' watershed.id %}" class="btn" style="background-color: #dc3545; color: white;">Eliminar Cuenca</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

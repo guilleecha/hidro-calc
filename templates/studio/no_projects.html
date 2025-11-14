@@ -19,7 +19,7 @@
             Crea tu primer proyecto para comenzar a trabajar con análisis hidrológico profesional.
         </p>
         <div class="action-buttons">
-            <a href="/admin/projects/project/add/" class="btn btn-primary">
+            <a href="{% url 'studio:project_create' %}" class="btn btn-primary">
                 ➕ Crear Primer Proyecto
             </a>
             <a href="{% url 'calculators:rational' %}" class="btn btn-secondary">
@@ -33,7 +33,7 @@
         <h2>📋 Cómo comenzar</h2>
         <ol>
             <li>
-                <strong>Crear Proyecto:</strong> Ve al Django Admin y crea un nuevo proyecto con nombre y ubicación.
+                <strong>Crear Proyecto:</strong> Haz clic en "Crear Primer Proyecto" y completa el formulario con nombre y ubicación.
             </li>
             <li>
                 <strong>Definir Cuenca(s):</strong> Agrega una o más cuencas al proyecto con sus parámetros físicos (área, Tc) e hidrológicos (C, NC).

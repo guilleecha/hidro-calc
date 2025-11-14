@@ -75,7 +75,10 @@
         <div class="empty-state">
             <div class="empty-state-icon">💧</div>
             <h2>No hay cuencas en este proyecto</h2>
-            <p>Agrega cuencas desde el <a href="/admin/">Django Admin</a>.</p>
+            <p>Crea una nueva cuenca para comenzar a analizar datos hidrológicos.</p>
+            <a href="{% url 'studio:watershed_create' project.id %}" class="empty-state-button">
+                + Crear Cuenca
+            </a>
         </div>
         {% else %}
         <!-- Header -->

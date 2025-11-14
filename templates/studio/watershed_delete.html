@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmar Eliminación - HidroStudio{% endblock %}
+
+{% block extra_css %}
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-icon {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .delete-icon svg {
+        width: 64px;
+        height: 64px;
+        color: #dc3545;
+    }
+
+    .delete-container h1 {
+        text-align: center;
+        margin-bottom: 10px;
+        color: #1a1a1a;
+    }
+
+    .delete-container p {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 15px;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-bottom: 30px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #856404;
+    }
+
+    .watershed-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 30px;
+    }
+
+    .watershed-info-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .watershed-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .watershed-info-label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .watershed-info-value {
+        color: #666;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 4px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #545b62;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="delete-container">
+    <div class="delete-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M5.5 5a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0v-6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0v-6a.5.5 0 0 1 .5-.5zm3 .5v6a.5.5 0 0 1-1 0v-6a.5.5 0 0 1 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 1v1h11V1h-11z"/>
+        </svg>
+    </div>
+
+    <h1>Eliminar Cuenca</h1>
+    <p>Esta acción no se puede deshacer</p>
+
+    <div class="warning-box">
+        <strong>⚠️ Advertencia:</strong> Al eliminar esta cuenca, se eliminarán todas las tormentas de diseño e hidrogramas asociados. Esta acción es irreversible.
+    </div>
+
+    {% if watershed %}
+    <div class="watershed-info">
+        <div class="watershed-info-item">
+            <span class="watershed-info-label">Cuenca:</span>
+            <span class="watershed-info-value">{{ watershed.name }}</span>
+        </div>
+        <div class="watershed-info-item">
+            <span class="watershed-info-label">Área:</span>
+            <span class="watershed-info-value">{{ watershed.area_hectareas }} ha</span>
+        </div>
+        <div class="watershed-info-item">
+            <span class="watershed-info-label">Proyecto:</span>
+            <span class="watershed-info-value">{{ project.name }}</span>
+        </div>
+        <div class="watershed-info-item">
+            <span class="watershed-info-label">Creado:</span>
+            <span class="watershed-info-value">{{ watershed.created_at|date:"d/m/Y" }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="">
+        {% csrf_token %}
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-danger">Sí, eliminar cuenca</button>
+            {% if project %}
+            <a href="{% url 'studio:dashboard_project' project.id %}" class="btn btn-secondary">Cancelar</a>
+            {% else %}
+            <a href="{% url 'studio:index' %}" class="btn btn-secondary">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+{% endblock %}
