@@ -3,6 +3,7 @@ DesignStorm Model - Tormenta de Diseño
 """
 
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 from watersheds.models import Watershed
 
 
@@ -73,6 +74,13 @@ class DesignStorm(models.Model):
     time_step_minutes = models.IntegerField(
         default=5,
         help_text="Intervalo de tiempo en minutos"
+    )
+
+    # Posición del pico de la tormenta (Alternating Block Method)
+    peak_position_ratio = models.FloatField(
+        default=0.5,
+        validators=[MinValueValidator(0.0), MaxValueValidator(1.0)],
+        help_text="Posición del pico como ratio (0.0-1.0). 0.5 = centro, 0.3 = inicio, 0.7 = final"
     )
 
     # Metadata

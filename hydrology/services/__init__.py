@@ -21,6 +21,12 @@ from .rainfall_excess import (
     RainfallExcessError
 )
 
+from .hydrograph_calculator import (
+    calculate_hydrograph,
+    calculate_hydrograph_rational,
+    HydrographCalculationError
+)
+
 __all__ = [
     # Hyetograph
     'generate_hyetograph',
@@ -32,4 +38,8 @@ __all__ = [
     'calculate_rainfall_excess_rational',
     'calculate_rainfall_excess_scs',
     'RainfallExcessError',
+    # Hydrograph
+    'calculate_hydrograph',
+    'calculate_hydrograph_rational',
+    'HydrographCalculationError',
 ]

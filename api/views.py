@@ -23,9 +23,13 @@ from .serializers import (
     HydrographSerializer,
     HydrographCreateSerializer,
     HydrographSummarySerializer,
+    HydrographCalculateRequestSerializer,
+    HydrographCalculateResponseSerializer,
     RainfallDataSerializer,
     RainfallDataCreateSerializer,
 )
+
+from hydrology.services import calculate_hydrograph, HydrographCalculationError
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -266,6 +270,157 @@ class HydrographViewSet(viewsets.ModelViewSet):
             'hydrographs': serializer.data,
             'statistics': comparison_stats
         })
+
+    @action(detail=False, methods=['post'])
+    def calculate(self, request):
+        """
+        POST /api/hydrographs/calculate/
+        Calcula hidrograma automáticamente a partir de una tormenta de diseño
+
+        Request body:
+        {
+            "design_storm_id": 1,
+            "name": "Hidrograma Q10",
+            "method": "rational",
+            "hyetograph_method": "alternating_block",
+            "excess_method": "rational",
+            "C": 0.6,
+            "peak_position_ratio": 0.5,
+            "time_step_minutes": 5
+        }
+
+        Returns:
+        {
+            "hydrograph": {...},  # Hidrograma guardado
+            "calculation_details": {...},  # Detalles completos
+            "message": "Hidrograma calculado exitosamente"
+        }
+        """
+        # Validar request
+        request_serializer = HydrographCalculateRequestSerializer(data=request.data)
+        if not request_serializer.is_valid():
+            return Response(
+                request_serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        validated_data = request_serializer.validated_data
+
+        # Obtener la tormenta de diseño
+        design_storm_id = validated_data['design_storm_id']
+        try:
+            design_storm = DesignStorm.objects.select_related('watershed').get(id=design_storm_id)
+        except DesignStorm.DoesNotExist:
+            return Response(
+                {'error': f'DesignStorm con id={design_storm_id} no encontrada'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verificar que la cuenca tenga los datos necesarios
+        watershed = design_storm.watershed
+        if not watershed.area_hectareas or watershed.area_hectareas <= 0:
+            return Response(
+                {'error': f'La cuenca debe tener área definida (area_hectareas > 0)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not watershed.tc_horas or watershed.tc_horas <= 0:
+            return Response(
+                {'error': f'La cuenca debe tener tiempo de concentración (tc_horas > 0)'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Extraer parámetros
+        method = validated_data.get('method', 'rational')
+        hyetograph_method = validated_data.get('hyetograph_method', 'alternating_block')
+        excess_method = validated_data.get('excess_method', 'rational')
+        C = validated_data.get('C', watershed.c_racional)
+        CN = validated_data.get('CN', watershed.nc_scs)
+        time_step_minutes = validated_data.get('time_step_minutes', None)
+        peak_position_ratio = validated_data.get('peak_position_ratio', design_storm.peak_position_ratio)
+        name = validated_data.get('name', f'{design_storm.name} - {method}')
+
+        # Parámetros de la tormenta
+        total_rainfall_mm = float(design_storm.total_rainfall_mm)
+        duration_hours = float(design_storm.duration_hours)
+        area_km2 = float(watershed.area_hectareas) / 100  # Convertir ha a km²
+        tc_minutes = float(watershed.tc_horas) * 60  # Convertir horas a minutos
+
+        # Parámetros IDF (si existen)
+        P3_10 = None
+        Tr = None
+        # Extraer P3_10 de metadata si está disponible
+        if watershed.extra_metadata and 'P3_10' in watershed.extra_metadata:
+            P3_10 = float(watershed.extra_metadata['P3_10'])
+        if design_storm.return_period_years:
+            Tr = float(design_storm.return_period_years)
+
+        # Calcular hidrograma usando el servicio
+        try:
+            calculation_result = calculate_hydrograph(
+                total_rainfall_mm=total_rainfall_mm,
+                duration_hours=duration_hours,
+                area_km2=area_km2,
+                tc_minutes=tc_minutes,
+                method=method,
+                hyetograph_method=hyetograph_method,
+                excess_method=excess_method,
+                C=C,
+                CN=CN,
+                time_step_minutes=time_step_minutes,
+                peak_position_ratio=peak_position_ratio,
+                P3_10=P3_10,
+                Tr=Tr
+            )
+        except HydrographCalculationError as e:
+            return Response(
+                {'error': f'Error en cálculo de hidrograma: {str(e)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Error inesperado: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # Construir hydrograph_data para guardar en BD
+        hydrograph_result = calculation_result['hydrograph']
+        summary = calculation_result['summary']
+
+        hydrograph_data = []
+        for i in range(len(hydrograph_result['time_steps'])):
+            hydrograph_data.append({
+                'time_min': hydrograph_result['time_steps'][i],
+                'discharge_m3s': hydrograph_result['discharge_m3s'][i],
+                'cumulative_volume_m3': hydrograph_result['cumulative_volume_m3'][i]
+            })
+
+        # Crear y guardar el hidrograma en la BD
+        hydrograph = Hydrograph.objects.create(
+            design_storm=design_storm,
+            name=name,
+            method=method,
+            peak_discharge_m3s=summary['peak_discharge_m3s'],
+            peak_discharge_lps=summary['peak_discharge_lps'],
+            time_to_peak_minutes=summary['time_to_peak_minutes'],
+            total_runoff_mm=summary['rainfall_excess_mm'],
+            total_runoff_m3=summary['total_volume_m3'],
+            volume_hm3=summary['total_volume_hm3'],
+            hydrograph_data=hydrograph_data,
+            rainfall_excess_mm=summary['rainfall_excess_mm'],
+            infiltration_total_mm=summary['infiltration_mm'],
+            notes=f"Auto-calculado. Método: {method}, C={C if C else 'N/A'}, CN={CN if CN else 'N/A'}"
+        )
+
+        # Serializar respuesta
+        hydrograph_serializer = HydrographSerializer(hydrograph)
+
+        response_data = {
+            'hydrograph': hydrograph_serializer.data,
+            'calculation_details': calculation_result,
+            'message': f'Hidrograma calculado exitosamente usando método {method}'
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
 
 
 class RainfallDataViewSet(viewsets.ModelViewSet):

@@ -163,8 +163,8 @@ class DesignStormSerializer(serializers.ModelSerializer):
             'id', 'watershed', 'name', 'description', 'return_period_years',
             'duration_hours', 'total_rainfall_mm', 'distribution_type',
             'initial_abstraction_mm', 'storage_parameter_mm', 'time_step_minutes',
-            'extra_metadata', 'created_at', 'updated_at', 'duration_minutes',
-            'average_intensity_mm_h'
+            'peak_position_ratio', 'extra_metadata', 'created_at', 'updated_at',
+            'duration_minutes', 'average_intensity_mm_h'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'duration_minutes', 'average_intensity_mm_h']
 
@@ -196,7 +196,7 @@ class DesignStormCreateSerializer(serializers.ModelSerializer):
             'watershed', 'name', 'description', 'return_period_years',
             'duration_hours', 'total_rainfall_mm', 'distribution_type',
             'initial_abstraction_mm', 'storage_parameter_mm', 'time_step_minutes',
-            'extra_metadata'
+            'peak_position_ratio', 'extra_metadata'
         ]
 
     def validate_return_period_years(self, value):
@@ -305,6 +305,109 @@ class HydrographSummarySerializer(serializers.ModelSerializer):
             'total_runoff_m3', 'created_at'
         ]
         read_only_fields = ['id', 'created_at']
+
+
+class HydrographCalculateRequestSerializer(serializers.Serializer):
+    """Serializer para request de cálculo de hidrograma"""
+
+    # Requerido
+    design_storm_id = serializers.IntegerField(
+        required=True,
+        help_text="ID de la tormenta de diseño"
+    )
+
+    # Opcional: nombre del hidrograma
+    name = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        help_text="Nombre descriptivo del hidrograma"
+    )
+
+    # Método de cálculo
+    method = serializers.ChoiceField(
+        choices=['rational', 'scs_unit_hydrograph'],
+        default='rational',
+        help_text="Método de cálculo de hidrograma"
+    )
+
+    # Método de hietograma
+    hyetograph_method = serializers.ChoiceField(
+        choices=['alternating_block', 'uniform'],
+        default='alternating_block',
+        help_text="Método de generación de hietograma"
+    )
+
+    # Método de lluvia efectiva
+    excess_method = serializers.ChoiceField(
+        choices=['rational', 'scs_curve_number'],
+        default='rational',
+        help_text="Método de cálculo de lluvia efectiva"
+    )
+
+    # Parámetros personalizados (opcional)
+    C = serializers.FloatField(
+        required=False,
+        min_value=0.0,
+        max_value=1.0,
+        help_text="Coeficiente de escorrentía (0.0-1.0) - Requerido si excess_method='rational'"
+    )
+
+    CN = serializers.IntegerField(
+        required=False,
+        min_value=30,
+        max_value=100,
+        help_text="Curve Number (30-100) - Requerido si excess_method='scs_curve_number'"
+    )
+
+    time_step_minutes = serializers.FloatField(
+        required=False,
+        min_value=1,
+        max_value=60,
+        help_text="Paso de tiempo en minutos (auto si no se especifica)"
+    )
+
+    peak_position_ratio = serializers.FloatField(
+        required=False,
+        min_value=0.0,
+        max_value=1.0,
+        default=0.5,
+        help_text="Posición del pico en hietograma (0.0-1.0)"
+    )
+
+    def validate(self, data):
+        """Validaciones cruzadas"""
+        excess_method = data.get('excess_method', 'rational')
+
+        # Validar que se proporcione C para método racional
+        if excess_method == 'rational' and 'C' not in data:
+            raise serializers.ValidationError({
+                'C': 'El parámetro C es requerido cuando excess_method=\'rational\''
+            })
+
+        # Validar que se proporcione CN para método SCS
+        if excess_method == 'scs_curve_number' and 'CN' not in data:
+            raise serializers.ValidationError({
+                'CN': 'El parámetro CN es requerido cuando excess_method=\'scs_curve_number\''
+            })
+
+        return data
+
+
+class HydrographCalculateResponseSerializer(serializers.Serializer):
+    """Serializer para response de cálculo de hidrograma"""
+
+    # Hidrograma creado
+    hydrograph = HydrographSerializer(read_only=True)
+
+    # Detalles del cálculo
+    calculation_details = serializers.DictField(
+        read_only=True,
+        help_text="Detalles completos del cálculo (hyetograph, excess, hydrograph)"
+    )
+
+    # Mensaje de éxito
+    message = serializers.CharField(read_only=True)
 
 
 # ============================================================================

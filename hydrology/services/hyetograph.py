@@ -109,7 +109,8 @@ def generate_hyetograph_alternating_block(
     P3_10: float,
     Tr: float,
     area_km2: float = None,
-    time_step_minutes: float = 5
+    time_step_minutes: float = 5,
+    peak_position_ratio: float = 0.5
 ) -> Dict:
     """
     Genera hietograma usando el Método de Bloques Alternados.
@@ -118,7 +119,7 @@ def generate_hyetograph_alternating_block(
     1. Divide la duración en intervalos de Δt
     2. Calcula intensidad para cada duración acumulada usando curva IDF
     3. Calcula incrementos de precipitación
-    4. Ordena incrementos en patrón alternado (pico al centro)
+    4. Ordena incrementos en patrón alternado con pico en posición especificada
 
     Args:
         total_rainfall_mm: Precipitación total de la tormenta (mm)
@@ -127,11 +128,12 @@ def generate_hyetograph_alternating_block(
         Tr: Período de retorno (años)
         area_km2: Área de cuenca en km² (None para puntual)
         time_step_minutes: Intervalo de tiempo (minutos, típico 5-15)
+        peak_position_ratio: Posición del pico (0.0-1.0), 0.5=centro, 0.3=inicio, 0.7=final
 
     Returns:
         Dict con misma estructura que generate_hyetograph_uniform pero con:
         - Patrón de lluvia no uniforme
-        - Pico de intensidad al centro de la tormenta
+        - Pico de intensidad en posición definida por peak_position_ratio
         - method: 'alternating_block'
         - idf_params: Dict con parámetros IDF usados
 
@@ -145,10 +147,10 @@ def generate_hyetograph_alternating_block(
         ...     duration_hours=2.0,
         ...     P3_10=70,
         ...     Tr=10,
-        ...     time_step_minutes=10
+        ...     time_step_minutes=10,
+        ...     peak_position_ratio=0.5  # Pico al centro
         ... )
         >>> max_idx = result['intensity_mmh'].index(max(result['intensity_mmh']))
-        >>> # El pico debería estar cerca del centro
     """
     # Validaciones
     if total_rainfall_mm <= 0:
@@ -161,6 +163,8 @@ def generate_hyetograph_alternating_block(
         raise ValueError(f"P3_10 debe estar entre 50-100mm. Valor: {P3_10}")
     if Tr < 2:
         raise ValueError(f"Período de retorno debe ser >= 2 años. Valor: {Tr}")
+    if peak_position_ratio < 0.0 or peak_position_ratio > 1.0:
+        raise ValueError(f"peak_position_ratio debe estar entre 0.0-1.0. Valor: {peak_position_ratio}")
 
     try:
         # Convertir duración a minutos
@@ -199,22 +203,34 @@ def generate_hyetograph_alternating_block(
             increment = precipitations[i] - precipitations[i-1]
             increments.append(increment)
 
-        # Paso 3: Ordenar incrementos en patrón alternado (pico al centro)
+        # Paso 3: Ordenar incrementos en patrón alternado con pico en peak_position_ratio
         # Ordenar de mayor a menor
         sorted_increments = sorted(increments, reverse=True)
 
-        # Crear patrón alternado: colocar el más alto al centro
-        alternating_pattern = []
-        left = []
-        right = []
+        # Calcular índice del pico basado en peak_position_ratio
+        # peak_position_ratio = 0.0 → inicio, 0.5 → centro, 1.0 → final
+        peak_index = int(num_intervals * peak_position_ratio)
 
-        for i, value in enumerate(sorted_increments):
-            if i % 2 == 0:
-                right.append(value)
-            else:
-                left.insert(0, value)  # Insertar al inicio
+        # Crear patrón alternado con pico en la posición especificada
+        alternating_pattern = [0] * num_intervals
+        alternating_pattern[peak_index] = sorted_increments[0]  # Colocar el máximo en la posición del pico
 
-        alternating_pattern = left + right
+        # Distribuir el resto de incrementos alternando desde el pico
+        left_index = peak_index - 1
+        right_index = peak_index + 1
+        increment_idx = 1
+
+        while increment_idx < len(sorted_increments):
+            # Alternar entre izquierda y derecha
+            if left_index >= 0 and increment_idx < len(sorted_increments):
+                alternating_pattern[left_index] = sorted_increments[increment_idx]
+                left_index -= 1
+                increment_idx += 1
+
+            if right_index < num_intervals and increment_idx < len(sorted_increments):
+                alternating_pattern[right_index] = sorted_increments[increment_idx]
+                right_index += 1
+                increment_idx += 1
 
         # Paso 4: Generar series temporales
         time_steps = [i * time_step_minutes for i in range(num_intervals + 1)]
@@ -266,7 +282,9 @@ def generate_hyetograph_alternating_block(
                 'area_km2': area_km2
             },
             'peak_intensity_mmh': max(intensity_series),
-            'peak_time_minutes': time_steps[intensity_series.index(max(intensity_series))]
+            'peak_time_minutes': time_steps[intensity_series.index(max(intensity_series))],
+            'peak_position_ratio': peak_position_ratio,
+            'peak_index': peak_index
         }
 
     except Exception as e:
@@ -280,7 +298,8 @@ def generate_hyetograph(
     time_step_minutes: float = 5,
     P3_10: float = None,
     Tr: float = None,
-    area_km2: float = None
+    area_km2: float = None,
+    peak_position_ratio: float = 0.5
 ) -> Dict:
     """
     Función principal para generar hietogramas.
@@ -295,6 +314,7 @@ def generate_hyetograph(
         P3_10: Parámetro P₃,₁₀ para IDF (requerido si method='alternating_block')
         Tr: Período de retorno (requerido si method='alternating_block')
         area_km2: Área de cuenca (opcional)
+        peak_position_ratio: Posición del pico (0.0-1.0, default 0.5 = centro)
 
     Returns:
         Dict con estructura de hietograma
@@ -307,11 +327,12 @@ def generate_hyetograph(
         >>> # Método uniforme
         >>> h1 = generate_hyetograph(50.0, 2.0, method='uniform')
         >>>
-        >>> # Método alternating block
+        >>> # Método alternating block con pico al 30%
         >>> h2 = generate_hyetograph(
         ...     50.0, 2.0,
         ...     method='alternating_block',
-        ...     P3_10=70, Tr=10
+        ...     P3_10=70, Tr=10,
+        ...     peak_position_ratio=0.3
         ... )
     """
     valid_methods = ['uniform', 'alternating_block']
@@ -338,5 +359,6 @@ def generate_hyetograph(
             P3_10=P3_10,
             Tr=Tr,
             area_km2=area_km2,
-            time_step_minutes=time_step_minutes
+            time_step_minutes=time_step_minutes,
+            peak_position_ratio=peak_position_ratio
         )
