@@ -24,6 +24,11 @@ urlpatterns = [
     path('watershed/<int:watershed_id>/edit/', views.watershed_edit, name='watershed_edit'),
     path('watershed/<int:watershed_id>/delete/', views.watershed_delete, name='watershed_delete'),
 
+    # Design Storm Management (CRUD)
+    path('watershed/<int:watershed_id>/design-storm/create/', views.design_storm_create, name='design_storm_create'),
+    path('design-storm/<int:design_storm_id>/edit/', views.design_storm_edit, name='design_storm_edit'),
+    path('design-storm/<int:design_storm_id>/delete/', views.design_storm_delete, name='design_storm_delete'),
+
     # Hietograma
     path('hyetograph/<int:storm_id>/', views.hyetograph_view, name='hyetograph'),
 
